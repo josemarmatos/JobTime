@@ -24,9 +24,9 @@ export default function Dashboard() {
       />
 
       <DashboardCard
-        title="🏢 Empresas"
-        onPress={() => Alert.alert("Empresas")}
-      />
+  title="🏢 Empresas"
+  onPress={() => router.push("/companies")}
+/>
 
       <DashboardCard
         title="📊 Relatórios"
