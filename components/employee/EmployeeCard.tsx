@@ -1,11 +1,8 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
-import { useRouter } from "expo-router";
-
-import PrimaryButton from "@/components/buttons/PrimaryButton";
-import CompanySelect from "@/components/company/CompanySelect";
-import PrimaryInput from "@/components/inputs/PrimaryInput";
+import EmployeeForm from "@/components/employee/EmployeeForm";
 import { Header } from "@/components/layout/Header";
 import { COLORS } from "@/constants/colors";
 import { employeeService } from "@/services/employeeService";
@@ -61,50 +58,21 @@ export default function EmployeeCreate() {
     <View style={styles.container}>
       <Header title="Cadastrar Funcionário" />
 
-      <CompanySelect
-        label="Empresa"
-        value={companyId}
-        onChange={setCompanyId}
-      />
-
-      <PrimaryInput
-        label="Nome Completo"
-        placeholder="Digite o nome"
-        value={name}
-        onChangeText={setName}
-      />
-
-      <PrimaryInput
-        label="CPF"
-        placeholder="Digite o CPF"
-        value={cpf}
-        onChangeText={setCpf}
-      />
-
-      <PrimaryInput
-        label="Cargo"
-        placeholder="Digite o cargo"
-        value={role}
-        onChangeText={setRole}
-      />
-
-      <PrimaryInput
-        label="Telefone"
-        placeholder="Digite o telefone"
-        value={phone}
-        onChangeText={setPhone}
-      />
-
-      <PrimaryInput
-        label="E-mail"
-        placeholder="Digite o e-mail"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <PrimaryButton
-        title="Salvar Funcionário"
-        onPress={handleSave}
+      <EmployeeForm
+        companyId={companyId}
+        name={name}
+        cpf={cpf}
+        role={role}
+        phone={phone}
+        email={email}
+        onChangeCompanyId={setCompanyId}
+        onChangeName={setName}
+        onChangeCpf={setCpf}
+        onChangeRole={setRole}
+        onChangePhone={setPhone}
+        onChangeEmail={setEmail}
+        buttonTitle="Salvar Funcionário"
+        onSubmit={handleSave}
       />
     </View>
   );
