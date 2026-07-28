@@ -7,6 +7,7 @@ import { Company } from "@/types/Company";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -34,6 +35,32 @@ export default function Companies() {
     });
   }
 
+  function handleDeleteCompany(id: number) {
+    Alert.alert(
+      "Excluir Empresa",
+      "Tem certeza que deseja excluir esta empresa?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => {
+            companyService.delete(id);
+            loadCompanies();
+
+            Alert.alert(
+              "Sucesso",
+              "Empresa excluída com sucesso!"
+            );
+          },
+        },
+      ]
+    );
+  }
+
   useFocusEffect(
     useCallback(() => {
       loadCompanies();
@@ -56,6 +83,7 @@ export default function Companies() {
           <CompanyCard
             company={item}
             onEdit={() => handleEditCompany(item.id!)}
+            onDelete={() => handleDeleteCompany(item.id!)}
           />
         )}
       />

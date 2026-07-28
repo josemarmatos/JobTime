@@ -67,6 +67,16 @@ export class CompanyService {
       ]
     );
   }
+
+  delete(id: number): void {
+    database.runSync(
+      `
+      DELETE FROM companies
+      WHERE id = ?;
+      `,
+      [id]
+    );
+  }
 }
 
 export const companyService = new CompanyService();
