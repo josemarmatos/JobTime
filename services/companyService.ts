@@ -31,6 +31,42 @@ export class CompanyService {
       ORDER BY name;
     `);
   }
+
+  findById(id: number): Company | null {
+    const company = database.getFirstSync<Company>(
+      `
+      SELECT *
+      FROM companies
+      WHERE id = ?;
+      `,
+      [id]
+    );
+
+    return company ?? null;
+  }
+
+  update(company: Company): void {
+    database.runSync(
+      `
+      UPDATE companies
+      SET
+        name = ?,
+        cnpj = ?,
+        phone = ?,
+        email = ?,
+        manager = ?
+      WHERE id = ?;
+      `,
+      [
+        company.name,
+        company.cnpj,
+        company.phone,
+        company.email,
+        company.manager,
+        company.id!,
+      ]
+    );
+  }
 }
 
 export const companyService = new CompanyService();

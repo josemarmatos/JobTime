@@ -1,18 +1,17 @@
+import PrimaryButton from "@/components/buttons/PrimaryButton";
 import CompanyCard from "@/components/company/CompanyCard";
+import { Header } from "@/components/layout/Header";
+import { COLORS } from "@/constants/colors";
+import { companyService } from "@/services/companyService";
+import { Company } from "@/types/Company";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-  Button,
   FlatList,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
-import { Header } from "@/components/layout/Header";
-import { COLORS } from "@/constants/colors";
-import { companyService } from "@/services/companyService";
-import { Company } from "@/types/Company";
 
 export default function Companies() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -20,6 +19,19 @@ export default function Companies() {
   function loadCompanies() {
     const data = companyService.list();
     setCompanies(data);
+  }
+
+  function handleCreateCompany() {
+    router.push("/company-create");
+  }
+
+  function handleEditCompany(id: number) {
+    router.push({
+      pathname: "/company-edit",
+      params: {
+        id: String(id),
+      },
+    });
   }
 
   useFocusEffect(
@@ -41,13 +53,16 @@ export default function Companies() {
           </Text>
         }
         renderItem={({ item }) => (
-  <CompanyCard company={item} />
-)}
+          <CompanyCard
+            company={item}
+            onEdit={() => handleEditCompany(item.id!)}
+          />
+        )}
       />
 
-      <Button
+      <PrimaryButton
         title="Nova Empresa"
-        onPress={() => router.push("/company-create")}
+        onPress={handleCreateCompany}
       />
     </View>
   );
@@ -66,6 +81,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#666",
   },
-
-  
 });

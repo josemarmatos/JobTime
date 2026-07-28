@@ -2,64 +2,57 @@ import CompanyForm from "@/components/company/CompanyForm";
 import { Header } from "@/components/layout/Header";
 import { COLORS } from "@/constants/colors";
 import { companyService } from "@/services/companyService";
-import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
-export default function CompanyCreate() {
+export default function CompanyEdit() {
+  const { id } = useLocalSearchParams();
+
   const [name, setName] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [manager, setManager] = useState("");
 
-  function handleSave() {
-    if (
-      !name.trim() ||
-      !cnpj.trim() ||
-      !phone.trim() ||
-      !email.trim() ||
-      !manager.trim()
-    ) {
-      Alert.alert(
-        "Campos obrigatórios",
-        "Preencha todos os campos."
-      );
+  useEffect(() => {
+    if (!id) return;
+
+    const company = companyService.findById(Number(id));
+
+    if (!company) {
+      Alert.alert("Erro", "Empresa não encontrada.");
+      router.back();
       return;
     }
 
-    try {
-      companyService.create({
-        name,
-        cnpj,
-        phone,
-        email,
-        manager,
-      });
+    setName(company.name);
+    setCnpj(company.cnpj);
+    setPhone(company.phone);
+    setEmail(company.email);
+    setManager(company.manager);
+  }, [id]);
 
-      Alert.alert(
-        "Sucesso",
-        "Empresa cadastrada com sucesso!"
-      );
+  function handleUpdate() {
+    if (!id) return;
 
-      setName("");
-      setCnpj("");
-      setPhone("");
-      setEmail("");
-      setManager("");
+    companyService.update({
+      id: Number(id),
+      name,
+      cnpj,
+      phone,
+      email,
+      manager,
+    });
 
-    } catch (error) {
-      console.error(error);
+    Alert.alert("Sucesso", "Empresa atualizada com sucesso!");
 
-      Alert.alert(
-        "Erro",
-        "Não foi possível salvar a empresa."
-      );
-    }
+    router.back();
   }
 
   return (
     <View style={styles.container}>
-      <Header title="Nova Empresa" />
+      <Header title="Editar Empresa" />
 
       <CompanyForm
         name={name}
@@ -67,15 +60,13 @@ export default function CompanyCreate() {
         phone={phone}
         email={email}
         manager={manager}
-
         onChangeName={setName}
         onChangeCnpj={setCnpj}
         onChangePhone={setPhone}
         onChangeEmail={setEmail}
         onChangeManager={setManager}
-
-        buttonTitle="Salvar Empresa"
-        onSubmit={handleSave}
+        buttonTitle="Salvar Alterações"
+        onSubmit={handleUpdate}
       />
     </View>
   );
