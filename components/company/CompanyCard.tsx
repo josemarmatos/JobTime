@@ -1,13 +1,51 @@
-import { StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
+import DangerButton from "@/components/buttons/DangerButton";
+import SecondaryButton from "@/components/buttons/SecondaryButton";
 import { COLORS } from "@/constants/colors";
 import { Company } from "@/types/Company";
 
 type Props = {
   company: Company;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
-export default function CompanyCard({ company }: Props) {
+export default function CompanyCard({
+  company,
+  onEdit,
+  onDelete,
+}: Props) {
+
+  function handleEdit() {
+    if (onEdit) {
+      onEdit();
+      return;
+    }
+
+    Alert.alert(
+      "Editar",
+      "Função de edição será implementada na próxima sprint."
+    );
+  }
+
+  function handleDelete() {
+    if (onDelete) {
+      onDelete();
+      return;
+    }
+
+    Alert.alert(
+      "Excluir",
+      "Função de exclusão será implementada na próxima sprint."
+    );
+  }
+
   return (
     <View style={styles.card}>
       <Text style={styles.name}>
@@ -29,6 +67,22 @@ export default function CompanyCard({ company }: Props) {
       <Text style={styles.info}>
         E-mail: {company.email}
       </Text>
+
+      <View style={styles.actions}>
+        <View style={styles.button}>
+          <SecondaryButton
+            title="Editar"
+            onPress={handleEdit}
+          />
+        </View>
+
+        <View style={styles.button}>
+          <DangerButton
+            title="Excluir"
+            onPress={handleDelete}
+          />
+        </View>
+      </View>
     </View>
   );
 }
@@ -65,5 +119,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#444",
     marginBottom: 4,
+  },
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    gap: 10,
+  },
+
+  button: {
+    flex: 1,
   },
 });
