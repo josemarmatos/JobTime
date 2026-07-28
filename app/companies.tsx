@@ -1,21 +1,49 @@
-import { Header } from "@/components/layout/Header";
-import { COLORS } from "@/constants/colors";
-import { router } from "expo-router";
+import CompanyCard from "@/components/company/CompanyCard";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import {
-    Button,
-    StyleSheet,
-    Text,
-    View,
+  Button,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
+import { Header } from "@/components/layout/Header";
+import { COLORS } from "@/constants/colors";
+import { companyService } from "@/services/companyService";
+import { Company } from "@/types/Company";
+
 export default function Companies() {
+  const [companies, setCompanies] = useState<Company[]>([]);
+
+  function loadCompanies() {
+    const data = companyService.list();
+    setCompanies(data);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCompanies();
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       <Header title="Empresas" />
 
-      <Text style={styles.message}>
-        Nenhuma empresa cadastrada.
-      </Text>
+      <FlatList
+        data={companies}
+        keyExtractor={(item) => String(item.id)}
+        ListEmptyComponent={
+          <Text style={styles.message}>
+            Nenhuma empresa cadastrada.
+          </Text>
+        }
+        renderItem={({ item }) => (
+  <CompanyCard company={item} />
+)}
+      />
 
       <Button
         title="Nova Empresa"
@@ -34,9 +62,10 @@ const styles = StyleSheet.create({
 
   message: {
     marginTop: 40,
-    marginBottom: 30,
-    fontSize: 18,
     textAlign: "center",
+    fontSize: 18,
     color: "#666",
   },
+
+  
 });

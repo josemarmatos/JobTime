@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
-
 import PrimaryButton from "@/components/buttons/PrimaryButton";
 import PrimaryInput from "@/components/inputs/PrimaryInput";
 import { Header } from "@/components/layout/Header";
 import { COLORS } from "@/constants/colors";
+import { companyService } from "@/services/companyService";
+import { useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
 
 export default function CompanyCreate() {
   const [name, setName] = useState("");
@@ -14,19 +14,28 @@ export default function CompanyCreate() {
   const [manager, setManager] = useState("");
 
   function handleSave() {
-    if (
-      !name.trim() ||
-      !cnpj.trim() ||
-      !phone.trim() ||
-      !email.trim() ||
-      !manager.trim()
-    ) {
-      Alert.alert(
-        "Campos obrigatórios",
-        "Preencha todos os campos."
-      );
-      return;
-    }
+  if (
+    !name.trim() ||
+    !cnpj.trim() ||
+    !phone.trim() ||
+    !email.trim() ||
+    !manager.trim()
+  ) {
+    Alert.alert(
+      "Campos obrigatórios",
+      "Preencha todos os campos."
+    );
+    return;
+  }
+
+  try {
+    companyService.create({
+      name,
+      cnpj,
+      phone,
+      email,
+      manager,
+    });
 
     Alert.alert(
       "Sucesso",
@@ -38,8 +47,16 @@ export default function CompanyCreate() {
     setPhone("");
     setEmail("");
     setManager("");
-  }
 
+  } catch (error) {
+    console.error(error);
+
+    Alert.alert(
+      "Erro",
+      "Não foi possível salvar a empresa."
+    );
+  }
+}
   return (
     <View style={styles.container}>
       <Header title="Nova Empresa" />
