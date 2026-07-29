@@ -75,11 +75,13 @@ export default function Employees() {
             employee={item}
             companyName={item.company_name}
             onEdit={() =>
-              Alert.alert(
-                "Em breve",
-                "A edição será implementada na próxima etapa."
-              )
-            }
+  router.push({
+    pathname: "/employee-edit",
+    params: {
+      id: String(item.id),
+    },
+  })
+}
             onDelete={() => handleDelete(item.id!)}
           />
         )}

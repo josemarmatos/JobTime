@@ -1,87 +1,139 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import EmployeeForm from "@/components/employee/EmployeeForm";
-import { Header } from "@/components/layout/Header";
+import DangerButton from "@/components/buttons/DangerButton";
+import SecondaryButton from "@/components/buttons/SecondaryButton";
 import { COLORS } from "@/constants/colors";
-import { employeeService } from "@/services/employeeService";
+import { Employee } from "@/types/Employee";
 
-export default function EmployeeCreate() {
-  const router = useRouter();
+type Props = {
+  employee: Employee;
+  companyName: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
+};
 
-  const [companyId, setCompanyId] = useState(0);
+export default function EmployeeCard({
+  employee,
+  companyName,
+  onEdit,
+  onDelete,
+}: Props) {
 
-  const [name, setName] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [role, setRole] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-
-  function handleSave() {
-    if (
-      companyId === 0 ||
-      !name.trim() ||
-      !cpf.trim() ||
-      !role.trim() ||
-      !phone.trim() ||
-      !email.trim()
-    ) {
-      Alert.alert(
-        "Campos obrigatórios",
-        "Preencha todos os campos."
-      );
+  function handleEdit() {
+    if (onEdit) {
+      onEdit();
       return;
     }
 
-    employeeService.create({
-      company_id: companyId,
-      name,
-      cpf,
-      phone,
-      email,
-      role,
-      admission_date: "",
-      birth_date: "",
-      active: 1,
-    });
+    Alert.alert(
+      "Editar",
+      "Função de edição será implementada."
+    );
+  }
+
+  function handleDelete() {
+    if (onDelete) {
+      onDelete();
+      return;
+    }
 
     Alert.alert(
-      "Sucesso",
-      "Funcionário cadastrado com sucesso!"
+      "Excluir",
+      "Função de exclusão será implementada."
     );
-
-    router.back();
   }
 
   return (
-    <View style={styles.container}>
-      <Header title="Cadastrar Funcionário" />
+    <View style={styles.card}>
+      <Text style={styles.name}>
+        {employee.name}
+      </Text>
 
-      <EmployeeForm
-        companyId={companyId}
-        name={name}
-        cpf={cpf}
-        role={role}
-        phone={phone}
-        email={email}
-        onChangeCompanyId={setCompanyId}
-        onChangeName={setName}
-        onChangeCpf={setCpf}
-        onChangeRole={setRole}
-        onChangePhone={setPhone}
-        onChangeEmail={setEmail}
-        buttonTitle="Salvar Funcionário"
-        onSubmit={handleSave}
-      />
+      <Text style={styles.info}>
+        Empresa: {companyName}
+      </Text>
+
+      <Text style={styles.info}>
+        Cargo: {employee.role}
+      </Text>
+
+      <Text style={styles.info}>
+        Telefone: {employee.phone}
+      </Text>
+
+      <Text style={styles.info}>
+        E-mail: {employee.email}
+      </Text>
+
+      <View style={styles.actions}>
+        <View style={styles.button}>
+          <SecondaryButton
+            title="Editar"
+            onPress={handleEdit}
+          />
+        </View>
+
+        <View style={styles.button}>
+          <DangerButton
+            title="Excluir"
+            onPress={handleDelete}
+          />
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 14,
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 3,
+  },
+
+  name: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginBottom: 10,
+  },
+
+  info: {
+    fontSize: 15,
+    color: "#444",
+    marginBottom: 4,
+  },
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    gap: 10,
+  },
+
+  button: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    padding: 20,
   },
 });

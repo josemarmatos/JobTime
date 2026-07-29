@@ -48,14 +48,24 @@ export default function Companies() {
           text: "Excluir",
           style: "destructive",
           onPress: () => {
-            companyService.delete(id);
-            loadCompanies();
+  try {
+    companyService.delete(id);
 
-            Alert.alert(
-              "Sucesso",
-              "Empresa excluída com sucesso!"
-            );
-          },
+    loadCompanies();
+
+    Alert.alert(
+      "Sucesso",
+      "Empresa excluída com sucesso!"
+    );
+  } catch (error) {
+    console.error(error);
+
+    Alert.alert(
+      "Não foi possível excluir",
+      "Esta empresa possui funcionários vinculados.\n\nExclua ou transfira os funcionários antes de excluir a empresa."
+    );
+  }
+},
         },
       ]
     );
