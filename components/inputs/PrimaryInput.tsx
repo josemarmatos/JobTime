@@ -1,5 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import {
+  KeyboardTypeOptions,
   StyleSheet,
   Text,
   TextInput,
@@ -11,7 +12,16 @@ type Props = {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+
   secureTextEntry?: boolean;
+
+  keyboardType?: KeyboardTypeOptions;
+
+  maxLength?: number;
+
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+
+  editable?: boolean;
 };
 
 export default function PrimaryInput({
@@ -19,7 +29,16 @@ export default function PrimaryInput({
   placeholder,
   value,
   onChangeText,
-  secureTextEntry,
+
+  secureTextEntry = false,
+
+  keyboardType = "default",
+
+  maxLength,
+
+  autoCapitalize = "sentences",
+
+  editable = true,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -36,6 +55,10 @@ export default function PrimaryInput({
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        maxLength={maxLength}
+        autoCapitalize={autoCapitalize}
+        editable={editable}
       />
     </View>
   );

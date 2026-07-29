@@ -14,19 +14,19 @@ export default function Dashboard() {
       </Text>
 
       <DashboardCard
-  title="👥 Funcionários"
-  onPress={() => router.push("/employees")}
-/>
-
-      <DashboardCard
-        title="📅 Escalas"
-        onPress={() => Alert.alert("Escalas")}
+        title="👥 Funcionários"
+        onPress={() => router.push("/employees")}
       />
 
       <DashboardCard
-  title="🏢 Empresas"
-  onPress={() => router.push("/companies")}
-/>
+        title="📅 Escalas"
+        onPress={() => router.push("/scales")}
+      />
+
+      <DashboardCard
+        title="🏢 Empresas"
+        onPress={() => router.push("/companies")}
+      />
 
       <DashboardCard
         title="📊 Relatórios"

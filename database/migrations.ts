@@ -30,7 +30,36 @@ export function runMigrations() {
       active INTEGER NOT NULL DEFAULT 1,
 
       FOREIGN KEY(company_id)
-      REFERENCES companies(id)
+        REFERENCES companies(id)
     );
+
+    CREATE TABLE IF NOT EXISTS scales (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+      employee_id INTEGER NOT NULL,
+
+      work_date TEXT NOT NULL,
+
+      start_time TEXT NOT NULL,
+
+      end_time TEXT NOT NULL,
+
+      shift_name TEXT NOT NULL,
+
+      status TEXT NOT NULL DEFAULT 'scheduled',
+
+      notes TEXT,
+
+      created_at TEXT NOT NULL,
+
+      updated_at TEXT,
+
+      FOREIGN KEY(employee_id)
+        REFERENCES employees(id)
+        ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_scales_employee_date
+      ON scales(employee_id, work_date);
   `);
 }
