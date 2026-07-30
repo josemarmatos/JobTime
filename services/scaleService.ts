@@ -7,6 +7,51 @@ export type ScaleListItem = Scale & {
 };
 
 export class ScaleService {
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  hasConflict(
+    employeeId: number,
+    workDate: string,
+    startTime: string,
+    endTime: string,
+    ignoreScaleId?: number
+  ): boolean {
+    const scales = database.getAllSync<Scale>(
+      `
+      SELECT *
+      FROM scales
+      WHERE employee_id = ?
+        AND work_date = ?;
+      `,
+      [employeeId, workDate]
+    );
+
+    const newStart = this.timeToMinutes(startTime);
+    const newEnd = this.timeToMinutes(endTime);
+
+    for (const scale of scales) {
+      if (ignoreScaleId && scale.id === ignoreScaleId) {
+        continue;
+      }
+
+      const existingStart = this.timeToMinutes(scale.start_time);
+      const existingEnd = this.timeToMinutes(scale.end_time);
+
+      const overlap =
+        newStart < existingEnd &&
+        newEnd > existingStart;
+
+      if (overlap) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   create(scale: Scale): void {
     database.runSync(
       `

@@ -29,7 +29,7 @@ export default function HomeScreen() {
     return;
   }
 
-  router.push("/dashboard");
+  router.replace("/dashboard");
 
   
 }

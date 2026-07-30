@@ -1,3 +1,4 @@
+
 import { runMigrations } from "@/database/migrations";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";

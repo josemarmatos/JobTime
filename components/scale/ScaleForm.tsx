@@ -4,13 +4,12 @@ import { Alert, View } from "react-native";
 import PrimaryButton from "@/components/buttons/PrimaryButton";
 import EmployeeSelect from "@/components/employee/EmployeeSelect";
 import PrimaryInput from "@/components/inputs/PrimaryInput";
+import { scaleService } from "@/services/scaleService";
 import { Scale } from "@/types/Scale";
 
 type Props = {
   initialValues?: Scale;
-
   buttonTitle: string;
-
   onSubmit: (scale: Scale) => void;
 };
 
@@ -50,6 +49,22 @@ export default function ScaleForm({
       Alert.alert(
         "Campos obrigatórios",
         "Preencha todos os campos obrigatórios."
+      );
+      return;
+    }
+
+    if (
+      scaleService.hasConflict(
+        employeeId,
+        workDate,
+        startTime,
+        endTime,
+        initialValues?.id
+      )
+    ) {
+      Alert.alert(
+        "Conflito de horário",
+        "Este funcionário já possui uma escala cadastrada para esse período."
       );
       return;
     }
