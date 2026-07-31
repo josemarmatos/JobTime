@@ -7,39 +7,26 @@ import PrimaryInput from "@/components/inputs/PrimaryInput";
 import { COLORS } from "@/constants/colors";
 
 export default function HomeScreen() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   function handleLogin() {
+    if (!email.trim()) {
+      Alert.alert("Atenção", "Informe seu e-mail.");
+      return;
+    }
 
-  if (!email.trim()) {
-    Alert.alert(
-      "Atenção",
-      "Informe seu e-mail."
-    );
-    return;
+    if (!password.trim()) {
+      Alert.alert("Atenção", "Informe sua senha.");
+      return;
+    }
+
+    router.replace("/dashboard");
   }
-
-  if (!password.trim()) {
-    Alert.alert(
-      "Atenção",
-      "Informe sua senha."
-    );
-    return;
-  }
-
-  router.replace("/dashboard");
-
-  
-}
 
   return (
     <View style={styles.container}>
-
-      <Text style={styles.title}>
-        JOB TIME
-      </Text>
+      <Text style={styles.title}>JOB TIME</Text>
 
       <Text style={styles.subtitle}>
         Gestão inteligente de equipes
@@ -66,13 +53,11 @@ export default function HomeScreen() {
       <Text style={styles.link}>
         Esqueci minha senha
       </Text>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     justifyContent: "center",
@@ -101,5 +86,4 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontWeight: "600",
   },
-
 });

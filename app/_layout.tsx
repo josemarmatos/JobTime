@@ -1,15 +1,14 @@
-
 import { runMigrations } from "@/database/migrations";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
-
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -21,13 +20,20 @@ export default function RootLayout() {
       runMigrations();
       console.log("Banco de dados inicializado com sucesso.");
     } catch (error) {
-      console.error("Erro ao inicializar o banco:", error);
+      console.error(
+        "Erro ao inicializar o banco:",
+        error
+      );
     }
   }, []);
 
   return (
     <ThemeProvider
-      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+      value={
+        colorScheme === "dark"
+          ? DarkTheme
+          : DefaultTheme
+      }
     >
       <Stack
         screenOptions={{
@@ -35,7 +41,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen
-          name="(tabs)"
+          name="index"
           options={{ headerShown: false }}
         />
 
