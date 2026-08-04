@@ -1,10 +1,18 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import PrimaryButton from "@/components/buttons/PrimaryButton";
+import EmptyState from "@/components/feedback/EmptyState";
 import { Header } from "@/components/layout/Header";
 import ScaleCard from "@/components/scale/ScaleCard";
+import SearchBar from "@/components/search/SearchBar";
 import { COLORS } from "@/constants/colors";
 import {
   ScaleListItem,
@@ -13,6 +21,7 @@ import {
 
 export default function Scales() {
   const [scales, setScales] = useState<ScaleListItem[]>([]);
+  const [search, setSearch] = useState("");
 
   function loadScales() {
     const data = scaleService.listWithEmployee();
@@ -46,9 +55,43 @@ export default function Scales() {
     );
   }
 
+  const filteredScales = scales.filter((scale) => {
+    const term = search.toLowerCase();
+
+    return (
+      scale.employee_name
+        .toLowerCase()
+        .includes(term) ||
+      scale.company_name
+        .toLowerCase()
+        .includes(term)
+    );
+  });
+
+  const emptyState =
+    scales.length === 0 ? (
+      <EmptyState
+        icon="📅"
+        title="Nenhuma escala cadastrada"
+        description='Clique em "+ Nova Escala" para começar.'
+      />
+    ) : (
+      <EmptyState
+        icon="🔍"
+        title="Nenhuma escala encontrada"
+        description="Tente outro termo de pesquisa."
+      />
+    );
+
   return (
     <View style={styles.container}>
       <Header title="Escalas" />
+
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Pesquisar funcionário ou empresa..."
+      />
 
       <PrimaryButton
         title="+ Nova Escala"
@@ -56,18 +99,11 @@ export default function Scales() {
       />
 
       <FlatList
-        data={scales}
+        data={filteredScales}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <PrimaryButton
-              title="Cadastrar primeira escala"
-              onPress={() => router.push("/scale-create")}
-            />
-          </View>
-        }
+        ListEmptyComponent={emptyState}
         renderItem={({ item }) => (
           <View style={styles.cardContainer}>
             <Text style={styles.company}>
@@ -105,10 +141,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 
-  emptyContainer: {
-    marginTop: 40,
-  },
-
   cardContainer: {
     marginBottom: 4,
   },
@@ -120,4 +152,4 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 14,
   },
-}); 
+});
