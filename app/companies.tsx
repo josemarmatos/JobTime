@@ -1,6 +1,8 @@
 import PrimaryButton from "@/components/buttons/PrimaryButton";
 import CompanyCard from "@/components/company/CompanyCard";
+import EmptyState from "@/components/feedback/EmptyState";
 import { Header } from "@/components/layout/Header";
+import SearchBar from "@/components/search/SearchBar";
 import { COLORS } from "@/constants/colors";
 import { companyService } from "@/services/companyService";
 import { Company } from "@/types/Company";
@@ -10,12 +12,12 @@ import {
   Alert,
   FlatList,
   StyleSheet,
-  Text,
-  View,
+  View
 } from "react-native";
 
 export default function Companies() {
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [search, setSearch] = useState("");
 
   function loadCompanies() {
     const data = companyService.list();
@@ -76,19 +78,39 @@ export default function Companies() {
       loadCompanies();
     }, [])
   );
+  const filteredCompanies = companies.filter((company) =>
+  company.name
+    .toLowerCase()
+    .includes(search.toLowerCase())
+);
+const emptyState =
+  companies.length === 0 ? (
+    <EmptyState
+      icon="🏢"
+      title="Nenhuma empresa cadastrada"
+      description='Clique em "Nova Empresa" para começar.'
+    />
+  ) : (
+    <EmptyState
+      icon="🔍"
+      title="Nenhuma empresa encontrada"
+      description="Tente outro termo de pesquisa."
+    />
+  );
 
   return (
     <View style={styles.container}>
       <Header title="Empresas" />
+      <SearchBar
+  value={search}
+  onChangeText={setSearch}
+  placeholder="Pesquisar empresa..."
+/>
 
       <FlatList
-        data={companies}
+        data={filteredCompanies}
         keyExtractor={(item) => String(item.id)}
-        ListEmptyComponent={
-          <Text style={styles.message}>
-            Nenhuma empresa cadastrada.
-          </Text>
-        }
+        ListEmptyComponent={emptyState}
         renderItem={({ item }) => (
           <CompanyCard
             company={item}
@@ -113,10 +135,4 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
-  message: {
-    marginTop: 40,
-    textAlign: "center",
-    fontSize: 18,
-    color: "#666",
-  },
-});
+  });
