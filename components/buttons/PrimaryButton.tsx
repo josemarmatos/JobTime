@@ -4,20 +4,23 @@ import { Pressable, StyleSheet, Text } from "react-native";
 type Props = {
   title: string;
   onPress?: () => void;
+  disabled?: boolean;
 };
 
 export default function PrimaryButton({
   title,
   onPress,
+  disabled = false,
 }: Props) {
   return (
     <Pressable
-  style={styles.button}
-  onPress={() => {
-    console.log("PRIMARY BUTTON");
-    onPress?.();
-  }}
->
+      disabled={disabled}
+      style={[
+        styles.button,
+        disabled && styles.buttonDisabled,
+      ]}
+      onPress={onPress}
+    >
       <Text style={styles.text}>
         {title}
       </Text>
@@ -31,11 +34,17 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 54,
+  },
+
+  buttonDisabled: {
+    opacity: 0.5,
   },
 
   text: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });
