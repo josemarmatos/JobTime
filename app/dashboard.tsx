@@ -1,165 +1,113 @@
 import { DashboardCard } from "@/components/cards/DashboardCard";
-import DashboardSection from "@/components/dashboard/DashboardSection";
+import Screen from "@/components/layout/Screen";
+import SectionTitle from "@/components/layout/SectionTitle";
 import StatCard from "@/components/stats/StatCard";
-import { COLORS } from "@/constants/colors";
 import { dashboardService } from "@/services/dashboardService";
-import { DashboardStatistics } from "@/types/Dashboard";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function Dashboard() {
-  const [stats, setStats] =
-    useState<DashboardStatistics>({
-      totalCompanies: 0,
-      totalEmployees: 0,
-      activeEmployees: 0,
-      inactiveEmployees: 0,
-      totalScales: 0,
-      todayScales: 0,
+  const [stats, setStats] = useState({
+    companies: 0,
+    employees: 0,
+    scales: 0,
+    activeEmployees: 0,
+  });
+
+  useEffect(() => {
+    const data = dashboardService.getStatistics();
+
+    setStats({
+      companies: data.totalCompanies,
+      employees: data.totalEmployees,
+      scales: data.totalScales,
+      activeEmployees: data.activeEmployees,
     });
-
-  function loadDashboard() {
-    const data =
-      dashboardService.getStatistics();
-
-    setStats(data);
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      loadDashboard();
-    }, [])
-  );
+  }, []);
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={styles.title}>
-        👋 Olá, Josemar
-      </Text>
+    <Screen>
+      <Text style={styles.greeting}>👋 Olá, Josemar</Text>
 
       <Text style={styles.subtitle}>
         Job Time{"\n"}
-        Sistema de Gestão de Equipes
+        Sistema Inteligente de Gestão
       </Text>
 
-      <DashboardSection title="📊 Visão Geral">
+      <SectionTitle title="Indicadores" />
 
-        <View style={styles.row}>
-          <StatCard
-            icon="🏢"
-            title="Empresas"
-            value={stats.totalCompanies}
-          />
-
-          <StatCard
-            icon="👥"
-            title="Funcionários"
-            value={stats.totalEmployees}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <StatCard
-            icon="📅"
-            title="Escalas"
-            value={stats.totalScales}
-          />
-
-          <StatCard
-            icon="🟢"
-            title="Ativos"
-            value={stats.activeEmployees}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <StatCard
-            icon="🔴"
-            title="Inativos"
-            value={stats.inactiveEmployees}
-          />
-
-          <StatCard
-            icon="📆"
-            title="Hoje"
-            value={stats.todayScales}
-          />
-        </View>
-
-      </DashboardSection>
-
-      <DashboardSection title="⚡ Acesso Rápido">
-
-        <DashboardCard
-          title="👥 Funcionários"
-          onPress={() =>
-            router.push("/employees")
-          }
+      <View style={styles.statsGrid}>
+        <StatCard
+          icon="🏢"
+          title="Empresas"
+          value={stats.companies}
         />
 
-        <DashboardCard
-          title="📅 Escalas"
-          onPress={() =>
-            router.push("/scales")
-          }
+        <StatCard
+          icon="👥"
+          title="Funcionários"
+          value={stats.employees}
         />
 
-        <DashboardCard
-          title="🏢 Empresas"
-          onPress={() =>
-            router.push("/companies")
-          }
+        <StatCard
+          icon="📅"
+          title="Escalas"
+          value={stats.scales}
         />
 
-        <DashboardCard
-          title="📊 Relatórios"
-          onPress={() =>
-            Alert.alert(
-              "Relatórios",
-              "Módulo em desenvolvimento."
-            )
-          }
+        <StatCard
+          icon="✅"
+          title="Ativos"
+          value={stats.activeEmployees}
         />
+      </View>
 
-      </DashboardSection>
-    </ScrollView>
+      <SectionTitle title="Gerenciamento" />
+
+      <DashboardCard
+        icon="🏢"
+        title="Empresas"
+        subtitle="Cadastrar e editar empresas"
+        onPress={() => router.push("/companies")}
+      />
+
+      <DashboardCard
+        icon="👥"
+        title="Funcionários"
+        subtitle="Gerenciar colaboradores"
+        onPress={() => router.push("/employees")}
+      />
+
+      <DashboardCard
+        icon="📅"
+        title="Escalas"
+        subtitle="Organizar jornadas"
+        onPress={() => router.push("/scales")}
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    padding: 20,
-  },
-
-  title: {
-    fontSize: 30,
+  greeting: {
+    fontSize: 34,
     fontWeight: "700",
-    color: COLORS.text,
-    marginTop: 20,
+    marginTop: 10,
   },
 
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#666",
-    marginTop: 8,
-    marginBottom: 24,
-    lineHeight: 24,
+    lineHeight: 28,
+    marginTop: 6,
+    marginBottom: 25,
   },
 
-  row: {
+  statsGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
+    marginBottom: 20,
   },
 });
