@@ -1,8 +1,8 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
 import {
-    SafeAreaView,
-    StyleSheet,
+  SafeAreaView,
+  StyleSheet,
 } from "react-native";
 
 type Props = {

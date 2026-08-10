@@ -1,11 +1,11 @@
-import { COLORS } from "@/constants/colors";
+import { THEME } from "@/constants/theme";
 import { ReactNode } from "react";
 import {
-    Pressable,
-    StyleProp,
-    StyleSheet,
-    View,
-    ViewStyle,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
 } from "react-native";
 
 type Props = {
@@ -43,28 +43,17 @@ export default function Card({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: THEME.colors.white,
 
-    borderRadius: 16,
+    borderRadius: THEME.radius.lg,
 
-    padding: 20,
+    padding: THEME.spacing.lg,
 
     borderWidth: 1,
 
-    borderColor: COLORS.border,
+    borderColor: THEME.colors.border,
 
-    shadowColor: "#000",
-
-    shadowOpacity: 0.08,
-
-    shadowRadius: 8,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-
-    elevation: 3,
+    ...THEME.shadow.md,
   },
 
   pressed: {

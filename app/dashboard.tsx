@@ -1,113 +1,51 @@
-import { DashboardCard } from "@/components/cards/DashboardCard";
+import AlertsPanel from "@/components/dashboard/AlertsPanel";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardSummary from "@/components/dashboard/DashboardSummary";
+import KPIGrid from "@/components/dashboard/KPIGrid";
+import ManagementSection from "@/components/dashboard/ManagementSection";
+import QuickActions from "@/components/dashboard/QuickActions";
+import SystemStatus from "@/components/dashboard/SystemStatus";
+import TodayOverview from "@/components/dashboard/TodayOverview";
 import Screen from "@/components/layout/Screen";
-import SectionTitle from "@/components/layout/SectionTitle";
-import StatCard from "@/components/stats/StatCard";
 import { dashboardService } from "@/services/dashboardService";
-import { router } from "expo-router";
+import { DashboardStatistics } from "@/types/Dashboard";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView } from "react-native";
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({
-    companies: 0,
-    employees: 0,
-    scales: 0,
+  const [stats, setStats] = useState<DashboardStatistics>({
+    totalCompanies: 0,
+    totalEmployees: 0,
     activeEmployees: 0,
+    inactiveEmployees: 0,
+    totalScales: 0,
+    todayScales: 0,
   });
 
   useEffect(() => {
     const data = dashboardService.getStatistics();
-
-    setStats({
-      companies: data.totalCompanies,
-      employees: data.totalEmployees,
-      scales: data.totalScales,
-      activeEmployees: data.activeEmployees,
-    });
+    setStats(data);
   }, []);
 
   return (
     <Screen>
-      <Text style={styles.greeting}>👋 Olá, Josemar</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <DashboardHeader />
 
-      <Text style={styles.subtitle}>
-        Job Time{"\n"}
-        Sistema Inteligente de Gestão
-      </Text>
+        <KPIGrid stats={stats} />
 
-      <SectionTitle title="Indicadores" />
+        <DashboardSummary stats={stats} />
 
-      <View style={styles.statsGrid}>
-        <StatCard
-          icon="🏢"
-          title="Empresas"
-          value={stats.companies}
-        />
+        <TodayOverview stats={stats} />
 
-        <StatCard
-          icon="👥"
-          title="Funcionários"
-          value={stats.employees}
-        />
+        <AlertsPanel stats={stats} />
 
-        <StatCard
-          icon="📅"
-          title="Escalas"
-          value={stats.scales}
-        />
+        <QuickActions />
 
-        <StatCard
-          icon="✅"
-          title="Ativos"
-          value={stats.activeEmployees}
-        />
-      </View>
+        <ManagementSection />
 
-      <SectionTitle title="Gerenciamento" />
-
-      <DashboardCard
-        icon="🏢"
-        title="Empresas"
-        subtitle="Cadastrar e editar empresas"
-        onPress={() => router.push("/companies")}
-      />
-
-      <DashboardCard
-        icon="👥"
-        title="Funcionários"
-        subtitle="Gerenciar colaboradores"
-        onPress={() => router.push("/employees")}
-      />
-
-      <DashboardCard
-        icon="📅"
-        title="Escalas"
-        subtitle="Organizar jornadas"
-        onPress={() => router.push("/scales")}
-      />
+        <SystemStatus />
+      </ScrollView>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  greeting: {
-    fontSize: 34,
-    fontWeight: "700",
-    marginTop: 10,
-  },
-
-  subtitle: {
-    fontSize: 18,
-    color: "#666",
-    lineHeight: 28,
-    marginTop: 6,
-    marginBottom: 25,
-  },
-
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-});

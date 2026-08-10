@@ -1,4 +1,4 @@
-import { COLORS } from "@/constants/colors";
+import { THEME } from "@/constants/theme";
 import { StyleSheet, Text } from "react-native";
 
 type Props = {
@@ -17,10 +17,14 @@ export default function SectionTitle({
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginTop: 20,
-    marginBottom: 16,
+    fontSize: THEME.typography.fontSize.xl,
+
+    fontWeight: THEME.typography.fontWeight.bold,
+
+    color: THEME.colors.text,
+
+    marginTop: THEME.spacing.lg,
+
+    marginBottom: THEME.spacing.md,
   },
 });

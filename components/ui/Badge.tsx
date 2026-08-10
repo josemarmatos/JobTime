@@ -1,4 +1,4 @@
-import { COLORS } from "@/constants/colors";
+import { THEME } from "@/constants/theme";
 import { StyleSheet, Text, View } from "react-native";
 
 type Variant =
@@ -35,38 +35,38 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
 
-    paddingHorizontal: 12,
+    paddingHorizontal: THEME.spacing.md,
 
-    paddingVertical: 6,
+    paddingVertical: THEME.spacing.xs,
 
-    borderRadius: 20,
+    borderRadius: THEME.radius.pill,
   },
 
   text: {
-    color: COLORS.white,
+    color: THEME.colors.white,
 
-    fontSize: 12,
+    fontSize: THEME.typography.fontSize.xs,
 
-    fontWeight: "700",
+    fontWeight: THEME.typography.fontWeight.bold,
   },
 
   primary: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: THEME.colors.primary,
   },
 
   secondary: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: THEME.colors.secondary,
   },
 
   success: {
-    backgroundColor: COLORS.success,
+    backgroundColor: THEME.colors.success,
   },
 
   warning: {
-    backgroundColor: COLORS.warning,
+    backgroundColor: THEME.colors.warning,
   },
 
   danger: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: THEME.colors.danger,
   },
 });

@@ -13,7 +13,7 @@ type Props = {
   onPress: () => void;
 };
 
-export function DashboardCard({
+export default function DashboardCard({
   title,
   subtitle,
   icon,

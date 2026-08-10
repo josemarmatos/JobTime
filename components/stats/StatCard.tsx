@@ -1,4 +1,4 @@
-import { COLORS } from "@/constants/colors";
+import { THEME } from "@/constants/theme";
 import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -33,45 +33,46 @@ const styles = StyleSheet.create({
   card: {
     width: "48%",
 
-    backgroundColor: COLORS.white,
+    backgroundColor: THEME.colors.white,
 
-    borderRadius: 18,
+    borderRadius: THEME.radius.lg,
 
-    padding: 20,
+    padding: THEME.spacing.lg,
 
-    marginBottom: 14,
+    marginBottom: THEME.spacing.md,
 
     alignItems: "center",
 
-    shadowColor: "#000",
+    justifyContent: "center",
 
-    shadowOpacity: 0.08,
+    borderWidth: 1,
 
-    shadowRadius: 8,
+    borderColor: THEME.colors.border,
 
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-
-    elevation: 3,
+    ...THEME.shadow.md,
   },
 
   icon: {
-    fontSize: 32,
-    marginBottom: 10,
+    fontSize: THEME.typography.fontSize.xxl,
+
+    marginBottom: THEME.spacing.sm,
   },
 
   title: {
-    fontSize: 15,
-    color: "#666",
+    fontSize: THEME.typography.fontSize.sm,
+
+    color: THEME.colors.textSecondary,
+
     textAlign: "center",
   },
 
   value: {
-    marginTop: 8,
-    fontSize: 30,
-    fontWeight: "700",
-    color: COLORS.primary,
+    marginTop: THEME.spacing.xs,
+
+    fontSize: THEME.typography.fontSize.xxl,
+
+    fontWeight: THEME.typography.fontWeight.bold,
+
+    color: THEME.colors.primary,
   },
 });
