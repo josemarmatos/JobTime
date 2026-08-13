@@ -1,3 +1,4 @@
+import { ToastProvider } from "@/components/ui/toast/ToastProvider";
 import { runMigrations } from "@/database/migrations";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
@@ -35,31 +36,33 @@ export default function RootLayout() {
           : DefaultTheme
       }
     >
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="dashboard"
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="modal"
-          options={{
-            presentation: "modal",
-            title: "Modal",
+      <ToastProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
           }}
-        />
-      </Stack>
+        >
+          <Stack.Screen
+            name="index"
+            options={{ headerShown: false }}
+          />
 
-      <StatusBar style="auto" />
+          <Stack.Screen
+            name="dashboard"
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+            name="modal"
+            options={{
+              presentation: "modal",
+              title: "Modal",
+            }}
+          />
+        </Stack>
+
+        <StatusBar style="auto" />
+      </ToastProvider>
     </ThemeProvider>
   );
 }

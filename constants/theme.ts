@@ -4,26 +4,32 @@ import shadow from "./shadow";
 import spacing from "./spacing";
 import typography from "./typography";
 
+/**
+ * Compatibilidade com o template padrão do Expo
+ */
 export const Colors = {
   light: {
     text: COLORS.text,
     background: COLORS.background,
     tint: COLORS.primary,
-    icon: COLORS.secondary,
-    tabIconDefault: "#999999",
+    icon: COLORS.textSecondary,
+    tabIconDefault: COLORS.textSecondary,
     tabIconSelected: COLORS.primary,
   },
 
   dark: {
     text: "#FFFFFF",
-    background: "#121212",
+    background: "#000000",
     tint: COLORS.primary,
-    icon: "#CCCCCC",
-    tabIconDefault: "#888888",
+    icon: "#9BA1A6",
+    tabIconDefault: "#9BA1A6",
     tabIconSelected: COLORS.primary,
   },
 };
 
+/**
+ * Design System do Job Time
+ */
 export const THEME = {
   colors: COLORS,
 

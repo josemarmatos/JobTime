@@ -7,12 +7,24 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import SystemStatus from "@/components/dashboard/SystemStatus";
 import TodayOverview from "@/components/dashboard/TodayOverview";
 import Screen from "@/components/layout/Screen";
+import AnimatedContainer from "@/components/ui/AnimatedContainer";
+import SkeletonDashboard from "@/components/ui/skeleton/SkeletonDashboard";
+import { useToast } from "@/components/ui/toast/ToastProvider";
 import { dashboardService } from "@/services/dashboardService";
+import { hapticService } from "@/services/hapticService";
 import { DashboardStatistics } from "@/types/Dashboard";
-import { useEffect, useState } from "react";
-import { ScrollView } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+} from "react-native";
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { showToast } = useToast();
+
   const [stats, setStats] = useState<DashboardStatistics>({
     totalCompanies: 0,
     totalEmployees: 0,
@@ -22,30 +34,108 @@ export default function Dashboard() {
     todayScales: 0,
   });
 
-  useEffect(() => {
-    const data = dashboardService.getStatistics();
+  const loadDashboard = useCallback(async () => {
+    const data = await Promise.resolve(
+      dashboardService.getStatistics()
+    );
+
     setStats(data);
   }, []);
 
+  useEffect(() => {
+    async function initialize() {
+      try {
+        await loadDashboard();
+      } catch (error) {
+        console.error(error);
+
+        await hapticService.error();
+
+        showToast(
+          "Erro ao carregar o Dashboard.",
+          "error"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initialize();
+  }, [loadDashboard, showToast]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+
+    try {
+      await loadDashboard();
+
+      await hapticService.success();
+
+      showToast(
+        "Dashboard atualizado com sucesso!",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+
+      await hapticService.error();
+
+      showToast(
+        "Erro ao atualizar o Dashboard.",
+        "error"
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadDashboard, showToast]);
+
   return (
     <Screen>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <DashboardHeader />
+      {loading ? (
+        <SkeletonDashboard />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
+        >
+          <AnimatedContainer>
+            <DashboardHeader />
+          </AnimatedContainer>
 
-        <KPIGrid stats={stats} />
+          <AnimatedContainer delay={80}>
+            <KPIGrid stats={stats} />
+          </AnimatedContainer>
 
-        <DashboardSummary stats={stats} />
+          <AnimatedContainer delay={160}>
+            <DashboardSummary stats={stats} />
+          </AnimatedContainer>
 
-        <TodayOverview stats={stats} />
+          <AnimatedContainer delay={240}>
+            <TodayOverview stats={stats} />
+          </AnimatedContainer>
 
-        <AlertsPanel stats={stats} />
+          <AnimatedContainer delay={320}>
+            <AlertsPanel stats={stats} />
+          </AnimatedContainer>
 
-        <QuickActions />
+          <AnimatedContainer delay={400}>
+            <QuickActions />
+          </AnimatedContainer>
 
-        <ManagementSection />
+          <AnimatedContainer delay={480}>
+            <ManagementSection />
+          </AnimatedContainer>
 
-        <SystemStatus />
-      </ScrollView>
+          <AnimatedContainer delay={560}>
+            <SystemStatus />
+          </AnimatedContainer>
+        </ScrollView>
+      )}
     </Screen>
   );
 }
