@@ -8,7 +8,9 @@ export type ScaleListItem = Scale & {
 
 export class ScaleService {
   private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hours, minutes] = time
+      .split(":")
+      .map(Number);
 
     return hours * 60 + minutes;
   }
@@ -30,8 +32,11 @@ export class ScaleService {
       [employeeId, workDate]
     );
 
-    const newStart = this.timeToMinutes(startTime);
-    const newEnd = this.timeToMinutes(endTime);
+    const newStart =
+      this.timeToMinutes(startTime);
+
+    const newEnd =
+      this.timeToMinutes(endTime);
 
     for (const scale of scales) {
       if (
@@ -42,10 +47,14 @@ export class ScaleService {
       }
 
       const existingStart =
-        this.timeToMinutes(scale.start_time);
+        this.timeToMinutes(
+          scale.start_time
+        );
 
       const existingEnd =
-        this.timeToMinutes(scale.end_time);
+        this.timeToMinutes(
+          scale.end_time
+        );
 
       const overlap =
         newStart < existingEnd &&
@@ -115,14 +124,15 @@ export class ScaleService {
   }
 
   findById(id: number): Scale | null {
-    const scale = database.getFirstSync<Scale>(
-      `
-      SELECT *
-      FROM scales
-      WHERE id = ?;
-      `,
-      [id]
-    );
+    const scale =
+      database.getFirstSync<Scale>(
+        `
+        SELECT *
+        FROM scales
+        WHERE id = ?;
+        `,
+        [id]
+      );
 
     return scale ?? null;
   }
@@ -180,6 +190,23 @@ export class ScaleService {
   }
 
   delete(id: number): void {
+    const scale = this.findById(id);
+
+    if (!scale) {
+      throw new Error(
+        "Escala não encontrada."
+      );
+    }
+
+    if (
+      scale.status === "completed" ||
+      scale.status === "cancelled"
+    ) {
+      throw new Error(
+        "Escalas concluídas ou canceladas não podem ser excluídas."
+      );
+    }
+
     database.runSync(
       `
       DELETE FROM scales

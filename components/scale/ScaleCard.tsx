@@ -220,14 +220,16 @@ export default function ScaleCard({
           </>
         ) : null}
 
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={onDelete}
-        >
-          <Text style={styles.buttonText}>
-            Excluir
-          </Text>
-        </TouchableOpacity>
+        {isScheduled ? (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={onDelete}
+          >
+            <Text style={styles.buttonText}>
+              Excluir
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );
