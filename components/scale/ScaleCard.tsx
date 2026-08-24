@@ -1,7 +1,14 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { COLORS } from "@/constants/colors";
-import { Scale } from "@/types/Scale";
+import { scaleService } from "@/services/scaleService";
+import { Scale, ScaleStatus } from "@/types/Scale";
 
 type Props = {
   scale: Scale & {
@@ -10,21 +17,108 @@ type Props = {
 
   onEdit?: () => void;
   onDelete?: () => void;
+  onStatusChange?: () => void;
 };
+
+function getStatusLabel(
+  status: ScaleStatus
+): string {
+  switch (status) {
+    case "scheduled":
+      return "Agendada";
+
+    case "completed":
+      return "Concluída";
+
+    case "cancelled":
+      return "Cancelada";
+  }
+}
+
+function getStatusStyle(
+  status: ScaleStatus
+) {
+  switch (status) {
+    case "scheduled":
+      return styles.scheduled;
+
+    case "completed":
+      return styles.completed;
+
+    case "cancelled":
+      return styles.cancelled;
+  }
+}
 
 export default function ScaleCard({
   scale,
   onEdit,
   onDelete,
+  onStatusChange,
 }: Props) {
+  const isScheduled =
+    scale.status === "scheduled";
+
+  function handleComplete() {
+    Alert.alert(
+      "Concluir escala",
+      "Deseja marcar esta escala como concluída?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Concluir",
+          onPress: () => {
+            scaleService.updateStatus(
+              scale.id!,
+              "completed"
+            );
+
+            onStatusChange?.();
+          },
+        },
+      ]
+    );
+  }
+
+  function handleCancel() {
+    Alert.alert(
+      "Cancelar escala",
+      "Deseja realmente cancelar esta escala?",
+      [
+        {
+          text: "Não",
+          style: "cancel",
+        },
+        {
+          text: "Cancelar escala",
+          style: "destructive",
+          onPress: () => {
+            scaleService.updateStatus(
+              scale.id!,
+              "cancelled"
+            );
+
+            onStatusChange?.();
+          },
+        },
+      ]
+    );
+  }
+
   return (
     <View style={styles.card}>
       <Text style={styles.employee}>
-        {scale.employee_name ?? "Funcionário"}
+        {scale.employee_name ??
+          "Funcionário"}
       </Text>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Data:</Text>
+        <Text style={styles.label}>
+          Data:
+        </Text>
 
         <Text style={styles.value}>
           {scale.work_date}
@@ -32,15 +126,20 @@ export default function ScaleCard({
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Horário:</Text>
+        <Text style={styles.label}>
+          Horário:
+        </Text>
 
         <Text style={styles.value}>
-          {scale.start_time} às {scale.end_time}
+          {scale.start_time} às{" "}
+          {scale.end_time}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Turno:</Text>
+        <Text style={styles.label}>
+          Turno:
+        </Text>
 
         <Text style={styles.value}>
           {scale.shift_name}
@@ -48,17 +147,17 @@ export default function ScaleCard({
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
+        <Text style={styles.label}>
+          Status:
+        </Text>
 
         <Text
           style={[
             styles.status,
-            scale.status === "scheduled"
-              ? styles.scheduled
-              : styles.otherStatus,
+            getStatusStyle(scale.status),
           ]}
         >
-          {scale.status}
+          {getStatusLabel(scale.status)}
         </Text>
       </View>
 
@@ -83,6 +182,28 @@ export default function ScaleCard({
             Editar
           </Text>
         </TouchableOpacity>
+
+        {isScheduled ? (
+          <>
+            <TouchableOpacity
+              style={styles.completeButton}
+              onPress={handleComplete}
+            >
+              <Text style={styles.buttonText}>
+                Concluir
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleCancel}
+            >
+              <Text style={styles.buttonText}>
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : null}
 
         <TouchableOpacity
           style={styles.deleteButton}
@@ -143,11 +264,15 @@ const styles = StyleSheet.create({
   },
 
   scheduled: {
+    color: "#1976D2",
+  },
+
+  completed: {
     color: "#2E7D32",
   },
 
-  otherStatus: {
-    color: "#F57C00",
+  cancelled: {
+    color: "#D32F2F",
   },
 
   notesContainer: {
@@ -173,10 +298,25 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     marginTop: 16,
     gap: 10,
+    flexWrap: "wrap",
   },
 
   editButton: {
     backgroundColor: "#1976D2",
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+
+  completeButton: {
+    backgroundColor: "#2E7D32",
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+
+  cancelButton: {
+    backgroundColor: "#F57C00",
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 8,

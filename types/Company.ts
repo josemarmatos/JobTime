@@ -1,8 +1,21 @@
 export interface Company {
-  id?: number;
+  id: number;
+
   name: string;
+
+  corporateName: string;
+
   cnpj: string;
-  phone: string;
-  email: string;
+
   manager: string;
+
+  phone: string;
+
+  email: string;
+
+  active: number;
+
+  createdAt: string;
+
+  updatedAt: string;
 }

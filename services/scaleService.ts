@@ -9,6 +9,7 @@ export type ScaleListItem = Scale & {
 export class ScaleService {
   private timeToMinutes(time: string): number {
     const [hours, minutes] = time.split(":").map(Number);
+
     return hours * 60 + minutes;
   }
 
@@ -33,12 +34,18 @@ export class ScaleService {
     const newEnd = this.timeToMinutes(endTime);
 
     for (const scale of scales) {
-      if (ignoreScaleId && scale.id === ignoreScaleId) {
+      if (
+        ignoreScaleId &&
+        scale.id === ignoreScaleId
+      ) {
         continue;
       }
 
-      const existingStart = this.timeToMinutes(scale.start_time);
-      const existingEnd = this.timeToMinutes(scale.end_time);
+      const existingStart =
+        this.timeToMinutes(scale.start_time);
+
+      const existingEnd =
+        this.timeToMinutes(scale.end_time);
 
       const overlap =
         newStart < existingEnd &&
@@ -149,6 +156,29 @@ export class ScaleService {
     );
   }
 
+  updateStatus(
+    id: number,
+    status:
+      | "scheduled"
+      | "completed"
+      | "cancelled"
+  ): void {
+    database.runSync(
+      `
+      UPDATE scales
+      SET
+        status = ?,
+        updated_at = ?
+      WHERE id = ?;
+      `,
+      [
+        status,
+        new Date().toISOString(),
+        id,
+      ]
+    );
+  }
+
   delete(id: number): void {
     database.runSync(
       `
@@ -160,4 +190,5 @@ export class ScaleService {
   }
 }
 
-export const scaleService = new ScaleService();
+export const scaleService =
+  new ScaleService();

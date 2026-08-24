@@ -8,7 +8,8 @@ export function runMigrations() {
       cnpj TEXT NOT NULL,
       phone TEXT,
       email TEXT,
-      manager TEXT
+      manager TEXT,
+      active INTEGER NOT NULL DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS employees (
@@ -62,4 +63,21 @@ export function runMigrations() {
     CREATE INDEX IF NOT EXISTS idx_scales_employee_date
       ON scales(employee_id, work_date);
   `);
+
+  const columns = database.getAllSync<{
+    name: string;
+  }>(`
+    PRAGMA table_info(companies);
+  `);
+
+  const hasActiveColumn = columns.some(
+    (column) => column.name === "active"
+  );
+
+  if (!hasActiveColumn) {
+    database.execSync(`
+      ALTER TABLE companies
+      ADD COLUMN active INTEGER NOT NULL DEFAULT 1;
+    `);
+  }
 }

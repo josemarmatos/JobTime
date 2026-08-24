@@ -1,6 +1,10 @@
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { COLORS } from "@/constants/colors";
 import { companyService } from "@/services/companyService";
@@ -10,14 +14,19 @@ type Props = {
   label?: string;
   value: number;
   onChange: (companyId: number) => void;
+  error?: string;
+  onBlur?: () => void;
 };
 
 export default function CompanySelect({
   label,
   value,
   onChange,
+  error,
+  onBlur,
 }: Props) {
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] =
+    useState<Company[]>([]);
 
   useEffect(() => {
     const data = companyService.list();
@@ -32,12 +41,18 @@ export default function CompanySelect({
         </Text>
       )}
 
-      <View style={styles.pickerContainer}>
+      <View
+        style={[
+          styles.pickerContainer,
+          error && styles.pickerError,
+        ]}
+      >
         <Picker
           selectedValue={value}
-          onValueChange={(itemValue) =>
-            onChange(Number(itemValue))
-          }
+          onValueChange={(itemValue) => {
+            onChange(Number(itemValue));
+          }}
+          onBlur={onBlur}
         >
           <Picker.Item
             label="Selecione uma empresa..."
@@ -53,6 +68,12 @@ export default function CompanySelect({
           ))}
         </Picker>
       </View>
+
+      {error ? (
+        <Text style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -75,5 +96,15 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: 12,
     overflow: "hidden",
+  },
+
+  pickerError: {
+    borderColor: "#D32F2F",
+  },
+
+  error: {
+    marginTop: 6,
+    color: "#D32F2F",
+    fontSize: 14,
   },
 });

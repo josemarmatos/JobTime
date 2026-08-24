@@ -1,3 +1,8 @@
+export type ScaleStatus =
+  | "scheduled"
+  | "completed"
+  | "cancelled";
+
 export interface Scale {
   id?: number;
 
@@ -11,7 +16,7 @@ export interface Scale {
 
   shift_name: string;
 
-  status: string;
+  status: ScaleStatus;
 
   notes?: string;
 

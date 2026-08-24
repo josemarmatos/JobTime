@@ -1,29 +1,40 @@
 import { COLORS } from "@/constants/colors";
-import { Pressable, StyleSheet, Text } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+} from "react-native";
 
 type Props = {
   title: string;
   onPress?: () => void;
   disabled?: boolean;
+  loading?: boolean;
 };
 
 export default function PrimaryButton({
   title,
   onPress,
   disabled = false,
+  loading = false,
 }: Props) {
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
-      disabled={disabled}
+      disabled={isDisabled}
       style={[
         styles.button,
-        disabled && styles.buttonDisabled,
+        isDisabled && styles.buttonDisabled,
       ]}
       onPress={onPress}
     >
-      <Text style={styles.text}>
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator color={COLORS.white} />
+      ) : (
+        <Text style={styles.text}>{title}</Text>
+      )}
     </Pressable>
   );
 }

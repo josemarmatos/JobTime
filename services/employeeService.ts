@@ -1,114 +1,47 @@
-import { database } from "@/database/database";
+import { employeeRepository } from "@/database/repositories/EmployeeRepository";
+import { CreateEmployeeDTO } from "@/types/CreateEmployeeDTO";
 import { Employee } from "@/types/Employee";
+import { UpdateEmployeeDTO } from "@/types/UpdateEmployeeDTO";
 
 export type EmployeeListItem = Employee & {
   company_name: string;
 };
 
 export class EmployeeService {
-  create(employee: Employee): void {
-    database.runSync(
-      `
-      INSERT INTO employees (
-        company_id,
-        name,
-        cpf,
-        phone,
-        email,
-        role,
-        admission_date,
-        birth_date,
-        active
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-      `,
-      [
-        employee.company_id,
-        employee.name,
-        employee.cpf,
-        employee.phone,
-        employee.email,
-        employee.role,
-        employee.admission_date,
-        employee.birth_date,
-        employee.active,
-      ]
-    );
+  create(employee: CreateEmployeeDTO): void {
+    employeeRepository.create(employee);
   }
 
   list(): Employee[] {
-    return database.getAllSync<Employee>(`
-      SELECT *
-      FROM employees
-      ORDER BY name;
-    `);
+    return employeeRepository.list();
   }
 
   listWithCompany(): EmployeeListItem[] {
-    return database.getAllSync<EmployeeListItem>(`
-      SELECT
-        employees.*,
-        companies.name AS company_name
-      FROM employees
-      INNER JOIN companies
-        ON companies.id = employees.company_id
-      ORDER BY employees.name;
-    `);
+    return employeeRepository.listWithCompany();
   }
 
   findById(id: number): Employee | null {
-    const employee = database.getFirstSync<Employee>(
-      `
-      SELECT *
-      FROM employees
-      WHERE id = ?;
-      `,
-      [id]
-    );
-
-    return employee ?? null;
+    return employeeRepository.findById(id);
   }
 
-  update(employee: Employee): void {
-    database.runSync(
-      `
-      UPDATE employees
-      SET
-        company_id = ?,
-        name = ?,
-        cpf = ?,
-        phone = ?,
-        email = ?,
-        role = ?,
-        admission_date = ?,
-        birth_date = ?,
-        active = ?
-      WHERE id = ?;
-      `,
-      [
-        employee.company_id,
-        employee.name,
-        employee.cpf,
-        employee.phone,
-        employee.email,
-        employee.role,
-        employee.admission_date,
-        employee.birth_date,
-        employee.active,
-        employee.id!,
-      ]
+  update(employee: UpdateEmployeeDTO): void {
+    employeeRepository.update(employee);
+  }
+
+  updateStatus(
+    id: number,
+    active: number
+  ): void {
+    employeeRepository.updateStatus(
+      id,
+      active
     );
   }
 
   delete(id: number): void {
-    database.runSync(
-      `
-      DELETE FROM employees
-      WHERE id = ?;
-      `,
-      [id]
-    );
+    employeeRepository.delete(id);
   }
 }
 
-export const employeeService = new EmployeeService();
+export const employeeService =
+  new EmployeeService();

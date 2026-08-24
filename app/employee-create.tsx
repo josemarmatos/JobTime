@@ -1,112 +1,139 @@
-import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
-
 import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput
+} from "react-native";
 
-import PrimaryButton from "@/components/buttons/PrimaryButton";
-import CompanySelect from "@/components/company/CompanySelect";
-import PrimaryInput from "@/components/inputs/PrimaryInput";
+import EmployeeForm from "@/components/employee/EmployeeForm";
 import { Header } from "@/components/layout/Header";
 import { COLORS } from "@/constants/colors";
 import { employeeService } from "@/services/employeeService";
+import { validateEmployee } from "@/validation/employeeValidation";
+import {
+  formatCPF,
+  formatPhone,
+} from "@/validation/masks";
 
 export default function EmployeeCreate() {
   const router = useRouter();
 
   const [companyId, setCompanyId] = useState(0);
-
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
   const [role, setRole] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
-  function handleSave() {
-    if (
-      companyId === 0 ||
-      !name.trim() ||
-      !cpf.trim() ||
-      !role.trim() ||
-      !phone.trim() ||
-      !email.trim()
-    ) {
-      Alert.alert(
-        "Campos obrigatórios",
-        "Preencha todos os campos."
-      );
-      return;
-    }
+  const [errors, setErrors] =
+    useState<Record<string, string>>({});
 
-    employeeService.create({
+  const [loading, setLoading] = useState(false);
+
+  const nameRef = useRef<TextInput>(null);
+  const cpfRef = useRef<TextInput>(null);
+  const roleRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+
+  function handleSave() {
+    const validation = validateEmployee({
       company_id: companyId,
       name,
       cpf,
+      role,
       phone,
       email,
-      role,
-      admission_date: "",
-      birth_date: "",
-      active: 1,
     });
 
-    Alert.alert(
-      "Sucesso",
-      "Funcionário cadastrado com sucesso!"
-    );
+    setErrors(validation);
 
-    router.back();
+    if (Object.keys(validation).length > 0) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      employeeService.create({
+        company_id: companyId,
+        name: name.trim(),
+        cpf,
+        phone,
+        email: email.trim(),
+        role: role.trim(),
+        admission_date: "",
+        birth_date: "",
+        active: 1,
+      });
+
+      alert(
+        "Funcionário cadastrado com sucesso!"
+      );
+
+      router.back();
+    } catch (error) {
+      console.error(
+        "Erro ao cadastrar funcionário:",
+        error
+      );
+
+      alert(
+        "Não foi possível cadastrar o funcionário."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : undefined
+      }
+    >
       <Header title="Cadastrar Funcionário" />
 
-      <CompanySelect
-        label="Empresa"
-        value={companyId}
-        onChange={setCompanyId}
-      />
-
-      <PrimaryInput
-        label="Nome Completo"
-        placeholder="Digite o nome"
-        value={name}
-        onChangeText={setName}
-      />
-
-      <PrimaryInput
-        label="CPF"
-        placeholder="Digite o CPF"
-        value={cpf}
-        onChangeText={setCpf}
-      />
-
-      <PrimaryInput
-        label="Cargo"
-        placeholder="Digite o cargo"
-        value={role}
-        onChangeText={setRole}
-      />
-
-      <PrimaryInput
-        label="Telefone"
-        placeholder="Digite o telefone"
-        value={phone}
-        onChangeText={setPhone}
-      />
-
-      <PrimaryInput
-        label="E-mail"
-        placeholder="Digite o e-mail"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <PrimaryButton
-        title="Salvar Funcionário"
-        onPress={handleSave}
-      />
-    </View>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <EmployeeForm
+          companyId={companyId}
+          name={name}
+          cpf={cpf}
+          role={role}
+          phone={phone}
+          email={email}
+          errors={errors}
+          nameRef={nameRef}
+          cpfRef={cpfRef}
+          roleRef={roleRef}
+          phoneRef={phoneRef}
+          emailRef={emailRef}
+          onChangeCompanyId={setCompanyId}
+          onChangeName={setName}
+          onChangeCpf={(value) => {
+            setCpf(formatCPF(value));
+          }}
+          onChangeRole={setRole}
+          onChangePhone={(value) => {
+            setPhone(formatPhone(value));
+          }}
+          onChangeEmail={setEmail}
+          buttonTitle="Salvar Funcionário"
+          onSubmit={handleSave}
+          loading={loading}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -114,6 +141,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+
+  content: {
     padding: 20,
+    paddingBottom: 40,
   },
 });

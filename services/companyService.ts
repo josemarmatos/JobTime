@@ -1,82 +1,72 @@
-import { database } from "@/database/database";
+import { companyRepository } from "@/database/repositories/CompanyRepository";
 import { Company } from "@/types/Company";
+import { CreateCompanyDTO } from "@/types/CreateCompanyDTO";
+import { UpdateCompanyDTO } from "@/types/UpdateCompanyDTO";
 
 export class CompanyService {
-  create(company: Company): void {
-    database.runSync(
-      `
-      INSERT INTO companies (
-        name,
-        cnpj,
-        phone,
-        email,
-        manager
+  create(company: CreateCompanyDTO): void {
+    const normalizedCnpj =
+      company.cnpj.replace(/\D/g, "");
+
+    if (
+      companyRepository.existsByCnpj(
+        normalizedCnpj
       )
-      VALUES (?, ?, ?, ?, ?);
-      `,
-      [
-        company.name,
-        company.cnpj,
-        company.phone,
-        company.email,
-        company.manager,
-      ]
-    );
+    ) {
+      throw new Error(
+        "CNPJ já cadastrado."
+      );
+    }
+
+    companyRepository.create({
+      ...company,
+      cnpj: normalizedCnpj,
+    });
   }
 
   list(): Company[] {
-    return database.getAllSync<Company>(`
-      SELECT *
-      FROM companies
-      ORDER BY name;
-    `);
+    return companyRepository.list();
   }
 
   findById(id: number): Company | null {
-    const company = database.getFirstSync<Company>(
-      `
-      SELECT *
-      FROM companies
-      WHERE id = ?;
-      `,
-      [id]
-    );
-
-    return company ?? null;
+    return companyRepository.findById(id);
   }
 
-  update(company: Company): void {
-    database.runSync(
-      `
-      UPDATE companies
-      SET
-        name = ?,
-        cnpj = ?,
-        phone = ?,
-        email = ?,
-        manager = ?
-      WHERE id = ?;
-      `,
-      [
-        company.name,
-        company.cnpj,
-        company.phone,
-        company.email,
-        company.manager,
-        company.id!,
-      ]
+  update(company: UpdateCompanyDTO): void {
+    const normalizedCnpj =
+      company.cnpj.replace(/\D/g, "");
+
+    if (
+      companyRepository.existsByCnpj(
+        normalizedCnpj,
+        company.id
+      )
+    ) {
+      throw new Error(
+        "CNPJ já cadastrado."
+      );
+    }
+
+    companyRepository.update({
+      ...company,
+      cnpj: normalizedCnpj,
+    });
+  }
+
+  updateStatus(
+    id: number,
+    active: number
+  ): void {
+    companyRepository.updateStatus(
+      id,
+      active
     );
   }
 
   delete(id: number): void {
-    database.runSync(
-      `
-      DELETE FROM companies
-      WHERE id = ?;
-      `,
-      [id]
-    );
+    companyRepository.delete(id);
   }
 }
 
-export const companyService = new CompanyService();
+export const companyService =
+  new CompanyService();

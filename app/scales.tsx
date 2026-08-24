@@ -1,3 +1,4 @@
+import { Picker } from "@react-native-picker/picker";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -19,12 +20,49 @@ import {
   scaleService,
 } from "@/services/scaleService";
 
+type StatusFilter =
+  | "all"
+  | "scheduled"
+  | "completed"
+  | "cancelled";
+
+type PeriodFilter =
+  | "all"
+  | "today"
+  | "upcoming"
+  | "past";
+
+function getTodayString(): string {
+  const today = new Date();
+
+  const year = today.getFullYear();
+  const month = String(
+    today.getMonth() + 1
+  ).padStart(2, "0");
+  const day = String(
+    today.getDate()
+  ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export default function Scales() {
-  const [scales, setScales] = useState<ScaleListItem[]>([]);
-  const [search, setSearch] = useState("");
+  const [scales, setScales] =
+    useState<ScaleListItem[]>([]);
+
+  const [search, setSearch] =
+    useState("");
+
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilter>("all");
+
+  const [periodFilter, setPeriodFilter] =
+    useState<PeriodFilter>("all");
 
   function loadScales() {
-    const data = scaleService.listWithEmployee();
+    const data =
+      scaleService.listWithEmployee();
+
     setScales(data);
   }
 
@@ -55,18 +93,40 @@ export default function Scales() {
     );
   }
 
-  const filteredScales = scales.filter((scale) => {
-    const term = search.toLowerCase();
+  const normalizedSearch =
+    search.trim().toLowerCase();
 
-    return (
-      scale.employee_name
-        .toLowerCase()
-        .includes(term) ||
-      scale.company_name
-        .toLowerCase()
-        .includes(term)
-    );
-  });
+  const today = getTodayString();
+
+  const filteredScales =
+    scales.filter((scale) => {
+      const matchesSearch =
+        scale.employee_name
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        scale.company_name
+          .toLowerCase()
+          .includes(normalizedSearch);
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        scale.status === statusFilter;
+
+      const matchesPeriod =
+        periodFilter === "all" ||
+        (periodFilter === "today" &&
+          scale.work_date === today) ||
+        (periodFilter === "upcoming" &&
+          scale.work_date > today) ||
+        (periodFilter === "past" &&
+          scale.work_date < today);
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesPeriod
+      );
+    });
 
   const emptyState =
     scales.length === 0 ? (
@@ -79,7 +139,7 @@ export default function Scales() {
       <EmptyState
         icon="🔍"
         title="Nenhuma escala encontrada"
-        description="Tente outro termo de pesquisa."
+        description="Tente outro termo ou filtro."
       />
     );
 
@@ -93,14 +153,92 @@ export default function Scales() {
         placeholder="Pesquisar funcionário ou empresa..."
       />
 
+      <View style={styles.filterContainer}>
+        <Text style={styles.filterLabel}>
+          Filtrar por status
+        </Text>
+
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={statusFilter}
+            onValueChange={(itemValue) =>
+              setStatusFilter(
+                itemValue as StatusFilter
+              )
+            }
+          >
+            <Picker.Item
+              label="Todas"
+              value="all"
+            />
+
+            <Picker.Item
+              label="Agendadas"
+              value="scheduled"
+            />
+
+            <Picker.Item
+              label="Concluídas"
+              value="completed"
+            />
+
+            <Picker.Item
+              label="Canceladas"
+              value="cancelled"
+            />
+          </Picker>
+        </View>
+      </View>
+
+      <View style={styles.filterContainer}>
+        <Text style={styles.filterLabel}>
+          Filtrar por período
+        </Text>
+
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={periodFilter}
+            onValueChange={(itemValue) =>
+              setPeriodFilter(
+                itemValue as PeriodFilter
+              )
+            }
+          >
+            <Picker.Item
+              label="Todas"
+              value="all"
+            />
+
+            <Picker.Item
+              label="Hoje"
+              value="today"
+            />
+
+            <Picker.Item
+              label="Próximas"
+              value="upcoming"
+            />
+
+            <Picker.Item
+              label="Anteriores"
+              value="past"
+            />
+          </Picker>
+        </View>
+      </View>
+
       <PrimaryButton
         title="+ Nova Escala"
-        onPress={() => router.push("/scale-create")}
+        onPress={() =>
+          router.push("/scale-create")
+        }
       />
 
       <FlatList
         data={filteredScales}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item) =>
+          String(item.id)
+        }
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={emptyState}
@@ -120,7 +258,10 @@ export default function Scales() {
                   },
                 })
               }
-              onDelete={() => handleDelete(item.id!)}
+              onDelete={() =>
+                handleDelete(item.id!)
+              }
+              onStatusChange={loadScales}
             />
           </View>
         )}
@@ -134,6 +275,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     padding: 20,
+  },
+
+  filterContainer: {
+    marginBottom: 16,
+  },
+
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 6,
+  },
+
+  pickerContainer: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    overflow: "hidden",
   },
 
   list: {

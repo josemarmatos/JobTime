@@ -6,6 +6,10 @@ import EmployeeForm from "@/components/employee/EmployeeForm";
 import { Header } from "@/components/layout/Header";
 import { COLORS } from "@/constants/colors";
 import { employeeService } from "@/services/employeeService";
+import {
+  formatCPF,
+  formatPhone,
+} from "@/validation/masks";
 
 export default function EmployeeEdit() {
   const { id } = useLocalSearchParams();
@@ -21,19 +25,28 @@ export default function EmployeeEdit() {
   useEffect(() => {
     if (!id) return;
 
-    const employee = employeeService.findById(Number(id));
+    const employee =
+      employeeService.findById(Number(id));
 
     if (!employee) {
-      Alert.alert("Erro", "Funcionário não encontrado.");
+      Alert.alert(
+        "Erro",
+        "Funcionário não encontrado."
+      );
+
       router.back();
       return;
     }
 
     setCompanyId(employee.company_id);
     setName(employee.name);
-    setCpf(employee.cpf);
+
+    setCpf(formatCPF(employee.cpf));
+
     setRole(employee.role);
-    setPhone(employee.phone);
+
+    setPhone(formatPhone(employee.phone));
+
     setEmail(employee.email);
   }, [id]);
 
@@ -52,17 +65,18 @@ export default function EmployeeEdit() {
         "Campos obrigatórios",
         "Preencha todos os campos."
       );
+
       return;
     }
 
     employeeService.update({
       id: Number(id),
       company_id: companyId,
-      name,
+      name: name.trim(),
       cpf,
       phone,
-      email,
-      role,
+      email: email.trim(),
+      role: role.trim(),
       admission_date: "",
       birth_date: "",
       active: 1,
@@ -89,9 +103,13 @@ export default function EmployeeEdit() {
         email={email}
         onChangeCompanyId={setCompanyId}
         onChangeName={setName}
-        onChangeCpf={setCpf}
+        onChangeCpf={(value) => {
+          setCpf(formatCPF(value));
+        }}
         onChangeRole={setRole}
-        onChangePhone={setPhone}
+        onChangePhone={(value) => {
+          setPhone(formatPhone(value));
+        }}
         onChangeEmail={setEmail}
         buttonTitle="Salvar Alterações"
         onSubmit={handleUpdate}

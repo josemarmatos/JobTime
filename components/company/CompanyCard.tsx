@@ -8,20 +8,22 @@ import {
 import DangerButton from "@/components/buttons/DangerButton";
 import SecondaryButton from "@/components/buttons/SecondaryButton";
 import { COLORS } from "@/constants/colors";
+import { companyService } from "@/services/companyService";
 import { Company } from "@/types/Company";
 
 type Props = {
   company: Company;
   onEdit?: () => void;
   onDelete?: () => void;
+  onStatusChange?: () => void;
 };
 
 export default function CompanyCard({
   company,
   onEdit,
   onDelete,
+  onStatusChange,
 }: Props) {
-
   function handleEdit() {
     if (onEdit) {
       onEdit();
@@ -30,7 +32,7 @@ export default function CompanyCard({
 
     Alert.alert(
       "Editar",
-      "Função de edição será implementada na próxima sprint."
+      "Função de edição será implementada."
     );
   }
 
@@ -42,15 +44,73 @@ export default function CompanyCard({
 
     Alert.alert(
       "Excluir",
-      "Função de exclusão será implementada na próxima sprint."
+      "Função de exclusão será implementada."
     );
   }
 
+  function handleStatusChange() {
+    const isActive = company.active === 1;
+
+    const action = isActive
+      ? "Inativar"
+      : "Ativar";
+
+    const message = isActive
+      ? "Deseja realmente inativar esta empresa?"
+      : "Deseja realmente ativar esta empresa?";
+
+    Alert.alert(
+      `${action} empresa`,
+      message,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: action,
+          onPress: () => {
+            companyService.updateStatus(
+              company.id,
+              isActive ? 0 : 1
+            );
+
+            onStatusChange?.();
+          },
+        },
+      ]
+    );
+  }
+
+  const isActive = company.active === 1;
+
   return (
     <View style={styles.card}>
-      <Text style={styles.name}>
-        {company.name}
-      </Text>
+      <View style={styles.header}>
+        <Text style={styles.name}>
+          {company.name}
+        </Text>
+
+        <View
+          style={[
+            styles.statusBadge,
+            isActive
+              ? styles.activeBadge
+              : styles.inactiveBadge,
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusText,
+              isActive
+                ? styles.activeText
+                : styles.inactiveText,
+            ]}
+          >
+            {isActive ? "Ativa" : "Inativa"}
+          </Text>
+        </View>
+      </View>
 
       <Text style={styles.info}>
         CNPJ: {company.cnpj}
@@ -73,6 +133,17 @@ export default function CompanyCard({
           <SecondaryButton
             title="Editar"
             onPress={handleEdit}
+          />
+        </View>
+
+        <View style={styles.button}>
+          <SecondaryButton
+            title={
+              isActive
+                ? "Inativar"
+                : "Ativar"
+            }
+            onPress={handleStatusChange}
           />
         </View>
 
@@ -108,11 +179,46 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    gap: 10,
+  },
+
   name: {
+    flex: 1,
     fontSize: 18,
     fontWeight: "700",
     color: COLORS.primary,
-    marginBottom: 10,
+  },
+
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+
+  activeBadge: {
+    backgroundColor: "#E8F5E9",
+  },
+
+  inactiveBadge: {
+    backgroundColor: "#F5F5F5",
+  },
+
+  statusText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  activeText: {
+    color: "#2E7D32",
+  },
+
+  inactiveText: {
+    color: "#757575",
   },
 
   info: {
