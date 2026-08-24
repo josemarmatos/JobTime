@@ -59,6 +59,19 @@ export default function ScaleCard({
   const isScheduled =
     scale.status === "scheduled";
 
+  function handleEdit() {
+    if (!isScheduled) {
+      Alert.alert(
+        "Edição não permitida",
+        "Escalas concluídas ou canceladas não podem ser alteradas."
+      );
+
+      return;
+    }
+
+    onEdit?.();
+  }
+
   function handleComplete() {
     Alert.alert(
       "Concluir escala",
@@ -174,14 +187,16 @@ export default function ScaleCard({
       ) : null}
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={onEdit}
-        >
-          <Text style={styles.buttonText}>
-            Editar
-          </Text>
-        </TouchableOpacity>
+        {isScheduled ? (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={handleEdit}
+          >
+            <Text style={styles.buttonText}>
+              Editar
+            </Text>
+          </TouchableOpacity>
+        ) : null}
 
         {isScheduled ? (
           <>
