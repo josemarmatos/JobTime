@@ -16,102 +16,102 @@ export class ScaleService {
   }
 
   hasConflict(
-  employeeId: number,
-  workDate: string,
-  startTime: string,
-  endTime: string,
-  ignoreScaleId?: number
-): boolean {
-  const scales = database.getAllSync<Scale>(
-    `
-    SELECT *
-    FROM scales
-    WHERE employee_id = ?
-      AND work_date BETWEEN date(?, '-1 day')
-                        AND date(?, '+1 day');
-    `,
-    [
-      employeeId,
-      workDate,
-      workDate,
-    ]
-  );
-
-  const baseDate = new Date(
-    `${workDate}T00:00:00Z`
-  );
-
-  const newStart =
-    this.timeToMinutes(startTime);
-
-  const newEnd =
-    this.timeToMinutes(endTime);
-
-  const newEndMinutes =
-    newEnd > newStart
-      ? newEnd
-      : newEnd + 24 * 60;
-
-  const newStartAbsolute =
-    newStart;
-
-  const newEndAbsolute =
-    newEndMinutes;
-
-  for (const scale of scales) {
-    if (
-      ignoreScaleId &&
-      scale.id === ignoreScaleId
-    ) {
-      continue;
-    }
-
-    const scaleDate = new Date(
-      `${scale.work_date}T00:00:00Z`
+    employeeId: number,
+    workDate: string,
+    startTime: string,
+    endTime: string,
+    ignoreScaleId?: number
+  ): boolean {
+    const scales = database.getAllSync<Scale>(
+      `
+      SELECT *
+      FROM scales
+      WHERE employee_id = ?
+        AND work_date BETWEEN date(?, '-1 day')
+                          AND date(?, '+1 day');
+      `,
+      [
+        employeeId,
+        workDate,
+        workDate,
+      ]
     );
 
-    const dayDifference =
-      Math.round(
-        (scaleDate.getTime() -
-          baseDate.getTime()) /
-          (24 * 60 * 60 * 1000)
+    const baseDate = new Date(
+      `${workDate}T00:00:00Z`
+    );
+
+    const newStart =
+      this.timeToMinutes(startTime);
+
+    const newEnd =
+      this.timeToMinutes(endTime);
+
+    const newEndMinutes =
+      newEnd > newStart
+        ? newEnd
+        : newEnd + 24 * 60;
+
+    const newStartAbsolute =
+      newStart;
+
+    const newEndAbsolute =
+      newEndMinutes;
+
+    for (const scale of scales) {
+      if (
+        ignoreScaleId &&
+        scale.id === ignoreScaleId
+      ) {
+        continue;
+      }
+
+      const scaleDate = new Date(
+        `${scale.work_date}T00:00:00Z`
       );
 
-    const existingStart =
-      this.timeToMinutes(
-        scale.start_time
-      );
+      const dayDifference =
+        Math.round(
+          (scaleDate.getTime() -
+            baseDate.getTime()) /
+            (24 * 60 * 60 * 1000)
+        );
 
-    const existingEnd =
-      this.timeToMinutes(
-        scale.end_time
-      );
+      const existingStart =
+        this.timeToMinutes(
+          scale.start_time
+        );
 
-    const existingStartAbsolute =
-      dayDifference * 24 * 60 +
-      existingStart;
+      const existingEnd =
+        this.timeToMinutes(
+          scale.end_time
+        );
 
-    const existingEndAbsolute =
-      dayDifference * 24 * 60 +
-      (
-        existingEnd > existingStart
-          ? existingEnd
-          : existingEnd + 24 * 60
-      );
+      const existingStartAbsolute =
+        dayDifference * 24 * 60 +
+        existingStart;
 
-    const overlap =
-      newStartAbsolute <
-        existingEndAbsolute &&
-      newEndAbsolute >
-        existingStartAbsolute;
+      const existingEndAbsolute =
+        dayDifference * 24 * 60 +
+        (
+          existingEnd > existingStart
+            ? existingEnd
+            : existingEnd + 24 * 60
+        );
 
-    if (overlap) {
-      return true;
+      const overlap =
+        newStartAbsolute <
+          existingEndAbsolute &&
+        newEndAbsolute >
+          existingStartAbsolute;
+
+      if (overlap) {
+        return true;
+      }
     }
-  }
 
-  return false;
-}
+    return false;
+  }
 
   create(scale: Scale): void {
     database.runSync(
@@ -183,6 +183,24 @@ export class ScaleService {
   }
 
   update(scale: Scale): void {
+    const existingScale =
+      this.findById(scale.id!);
+
+    if (!existingScale) {
+      throw new Error(
+        "Escala não encontrada."
+      );
+    }
+
+    if (
+      existingScale.status === "completed" ||
+      existingScale.status === "cancelled"
+    ) {
+      throw new Error(
+        "Escalas concluídas ou canceladas não podem ser alteradas."
+      );
+    }
+
     database.runSync(
       `
       UPDATE scales
