@@ -7,6 +7,7 @@ import {
 } from "react-native";
 
 import Badge from "@/components/ui/Badge";
+import Card from "@/components/ui/Card";
 import { COLORS } from "@/constants/colors";
 import { scaleService } from "@/services/scaleService";
 import { Scale, ScaleStatus } from "@/types/Scale";
@@ -157,7 +158,7 @@ export default function ScaleCard({
   }
 
   return (
-    <View style={styles.card}>
+    <Card style={styles.card}>
       <Text style={styles.employee}>
         {scale.employee_name ??
           "Funcionário"}
@@ -270,26 +271,13 @@ export default function ScaleCard({
           </TouchableOpacity>
         ) : null}
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    padding: 16,
     marginBottom: 16,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-
-    elevation: 3,
   },
 
   employee: {
