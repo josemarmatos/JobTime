@@ -6,6 +6,7 @@ import {
   View,
 } from "react-native";
 
+import Badge from "@/components/ui/Badge";
 import { COLORS } from "@/constants/colors";
 import { scaleService } from "@/services/scaleService";
 import { Scale, ScaleStatus } from "@/types/Scale";
@@ -20,33 +21,27 @@ type Props = {
   onStatusChange?: () => void;
 };
 
-function getStatusLabel(
-  status: ScaleStatus
-): string {
-  switch (status) {
-    case "scheduled":
-      return "Agendada";
-
-    case "completed":
-      return "Concluída";
-
-    case "cancelled":
-      return "Cancelada";
-  }
-}
-
-function getStatusStyle(
+function getStatusBadge(
   status: ScaleStatus
 ) {
   switch (status) {
     case "scheduled":
-      return styles.scheduled;
+      return {
+        label: "Agendada",
+        variant: "primary" as const,
+      };
 
     case "completed":
-      return styles.completed;
+      return {
+        label: "Concluída",
+        variant: "success" as const,
+      };
 
     case "cancelled":
-      return styles.cancelled;
+      return {
+        label: "Cancelada",
+        variant: "danger" as const,
+      };
   }
 }
 
@@ -95,6 +90,9 @@ export default function ScaleCard({
     scale.start_time,
     scale.end_time
   );
+
+  const statusBadge =
+    getStatusBadge(scale.status);
 
   function handleEdit() {
     if (!isScheduled) {
@@ -204,19 +202,15 @@ export default function ScaleCard({
         </Text>
       </View>
 
-      <View style={styles.row}>
+      <View style={styles.statusRow}>
         <Text style={styles.label}>
           Status:
         </Text>
 
-        <Text
-          style={[
-            styles.status,
-            getStatusStyle(scale.status),
-          ]}
-        >
-          {getStatusLabel(scale.status)}
-        </Text>
+        <Badge
+          label={statusBadge.label}
+          variant={statusBadge.variant}
+        />
       </View>
 
       {scale.notes ? (
@@ -310,6 +304,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
   label: {
     width: 70,
     fontWeight: "bold",
@@ -328,22 +328,6 @@ const styles = StyleSheet.create({
   overnightText: {
     color: "#5E35B1",
     fontWeight: "600",
-  },
-
-  status: {
-    fontWeight: "bold",
-  },
-
-  scheduled: {
-    color: "#1976D2",
-  },
-
-  completed: {
-    color: "#2E7D32",
-  },
-
-  cancelled: {
-    color: "#D32F2F",
   },
 
   notesContainer: {
