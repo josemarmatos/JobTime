@@ -50,6 +50,38 @@ function getStatusStyle(
   }
 }
 
+function formatDate(
+  value: string
+): string {
+  const [year, month, day] =
+    value.split("-");
+
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return `${day}/${month}/${year}`;
+}
+
+function timeToMinutes(
+  value: string
+): number {
+  const [hours, minutes] =
+    value.split(":").map(Number);
+
+  return hours * 60 + minutes;
+}
+
+function isOvernight(
+  startTime: string,
+  endTime: string
+): boolean {
+  return (
+    timeToMinutes(endTime) <
+    timeToMinutes(startTime)
+  );
+}
+
 export default function ScaleCard({
   scale,
   onEdit,
@@ -58,6 +90,11 @@ export default function ScaleCard({
 }: Props) {
   const isScheduled =
     scale.status === "scheduled";
+
+  const overnight = isOvernight(
+    scale.start_time,
+    scale.end_time
+  );
 
   function handleEdit() {
     if (!isScheduled) {
@@ -134,7 +171,7 @@ export default function ScaleCard({
         </Text>
 
         <Text style={styles.value}>
-          {scale.work_date}
+          {formatDate(scale.work_date)}
         </Text>
       </View>
 
@@ -144,10 +181,18 @@ export default function ScaleCard({
         </Text>
 
         <Text style={styles.value}>
-          {scale.start_time} às{" "}
+          {scale.start_time} →{" "}
           {scale.end_time}
         </Text>
       </View>
+
+      {overnight ? (
+        <View style={styles.overnightContainer}>
+          <Text style={styles.overnightText}>
+            🌙 Jornada noturna
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.row}>
         <Text style={styles.label}>
@@ -274,6 +319,15 @@ const styles = StyleSheet.create({
   value: {
     flex: 1,
     color: COLORS.text,
+  },
+
+  overnightContainer: {
+    marginBottom: 8,
+  },
+
+  overnightText: {
+    color: "#5E35B1",
+    fontWeight: "600",
   },
 
   status: {
