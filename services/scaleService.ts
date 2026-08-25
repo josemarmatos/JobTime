@@ -16,57 +16,102 @@ export class ScaleService {
   }
 
   hasConflict(
-    employeeId: number,
-    workDate: string,
-    startTime: string,
-    endTime: string,
-    ignoreScaleId?: number
-  ): boolean {
-    const scales = database.getAllSync<Scale>(
-      `
-      SELECT *
-      FROM scales
-      WHERE employee_id = ?
-        AND work_date = ?;
-      `,
-      [employeeId, workDate]
-    );
+  employeeId: number,
+  workDate: string,
+  startTime: string,
+  endTime: string,
+  ignoreScaleId?: number
+): boolean {
+  const scales = database.getAllSync<Scale>(
+    `
+    SELECT *
+    FROM scales
+    WHERE employee_id = ?
+      AND work_date BETWEEN date(?, '-1 day')
+                        AND date(?, '+1 day');
+    `,
+    [
+      employeeId,
+      workDate,
+      workDate,
+    ]
+  );
 
-    const newStart =
-      this.timeToMinutes(startTime);
+  const baseDate = new Date(
+    `${workDate}T00:00:00Z`
+  );
 
-    const newEnd =
-      this.timeToMinutes(endTime);
+  const newStart =
+    this.timeToMinutes(startTime);
 
-    for (const scale of scales) {
-      if (
-        ignoreScaleId &&
-        scale.id === ignoreScaleId
-      ) {
-        continue;
-      }
+  const newEnd =
+    this.timeToMinutes(endTime);
 
-      const existingStart =
-        this.timeToMinutes(
-          scale.start_time
-        );
+  const newEndMinutes =
+    newEnd > newStart
+      ? newEnd
+      : newEnd + 24 * 60;
 
-      const existingEnd =
-        this.timeToMinutes(
-          scale.end_time
-        );
+  const newStartAbsolute =
+    newStart;
 
-      const overlap =
-        newStart < existingEnd &&
-        newEnd > existingStart;
+  const newEndAbsolute =
+    newEndMinutes;
 
-      if (overlap) {
-        return true;
-      }
+  for (const scale of scales) {
+    if (
+      ignoreScaleId &&
+      scale.id === ignoreScaleId
+    ) {
+      continue;
     }
 
-    return false;
+    const scaleDate = new Date(
+      `${scale.work_date}T00:00:00Z`
+    );
+
+    const dayDifference =
+      Math.round(
+        (scaleDate.getTime() -
+          baseDate.getTime()) /
+          (24 * 60 * 60 * 1000)
+      );
+
+    const existingStart =
+      this.timeToMinutes(
+        scale.start_time
+      );
+
+    const existingEnd =
+      this.timeToMinutes(
+        scale.end_time
+      );
+
+    const existingStartAbsolute =
+      dayDifference * 24 * 60 +
+      existingStart;
+
+    const existingEndAbsolute =
+      dayDifference * 24 * 60 +
+      (
+        existingEnd > existingStart
+          ? existingEnd
+          : existingEnd + 24 * 60
+      );
+
+    const overlap =
+      newStartAbsolute <
+        existingEndAbsolute &&
+      newEndAbsolute >
+        existingStartAbsolute;
+
+    if (overlap) {
+      return true;
+    }
   }
+
+  return false;
+}
 
   create(scale: Scale): void {
     database.runSync(

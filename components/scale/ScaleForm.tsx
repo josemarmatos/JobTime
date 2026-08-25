@@ -216,14 +216,14 @@ export default function ScaleForm({
     const endMinutes =
       timeToMinutes(endTime);
 
-    if (endMinutes <= startMinutes) {
-      Alert.alert(
-        "Horário inválido",
-        "A hora final deve ser posterior à hora inicial."
-      );
+    if (endMinutes === startMinutes) {
+  Alert.alert(
+    "Horário inválido",
+    "A hora inicial e a hora final não podem ser iguais."
+  );
 
-      return;
-    }
+  return;
+}
 
     const databaseDate =
       displayDateToDatabase(workDate);
