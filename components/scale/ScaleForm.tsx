@@ -6,6 +6,7 @@ import EmployeeSelect from "@/components/employee/EmployeeSelect";
 import PrimaryInput from "@/components/inputs/PrimaryInput";
 import { scaleService } from "@/services/scaleService";
 import { Scale } from "@/types/Scale";
+import { validateScale } from "@/validation/scaleValidation";
 
 type Props = {
   initialValues?: Scale;
@@ -13,7 +14,9 @@ type Props = {
   onSubmit: (scale: Scale) => void;
 };
 
-function formatDateInput(value: string): string {
+function formatDateInput(
+  value: string
+): string {
   const digits = value
     .replace(/\D/g, "")
     .slice(0, 8);
@@ -23,16 +26,24 @@ function formatDateInput(value: string): string {
   }
 
   if (digits.length <= 4) {
-    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${digits.slice(
+      0,
+      2
+    )}/${digits.slice(2)}`;
   }
 
-  return `${digits.slice(0, 2)}/${digits.slice(
+  return `${digits.slice(
+    0,
+    2
+  )}/${digits.slice(
     2,
     4
   )}/${digits.slice(4)}`;
 }
 
-function formatTimeInput(value: string): string {
+function formatTimeInput(
+  value: string
+): string {
   const digits = value
     .replace(/\D/g, "")
     .slice(0, 4);
@@ -41,16 +52,20 @@ function formatTimeInput(value: string): string {
     return digits;
   }
 
-  return `${digits.slice(0, 2)}:${digits.slice(
+  return `${digits.slice(
+    0,
     2
-  )}`;
+  )}:${digits.slice(2)}`;
 }
 
 function displayDateToDatabase(
   value: string
 ): string {
-  const [day, month, year] =
-    value.split("/");
+  const [
+    day,
+    month,
+    year,
+  ] = value.split("/");
 
   return `${year}-${month}-${day}`;
 }
@@ -58,60 +73,21 @@ function displayDateToDatabase(
 function databaseDateToDisplay(
   value: string
 ): string {
-  const [year, month, day] =
-    value.split("-");
+  const [
+    year,
+    month,
+    day,
+  ] = value.split("-");
 
-  if (!year || !month || !day) {
+  if (
+    !year ||
+    !month ||
+    !day
+  ) {
     return value;
   }
 
   return `${day}/${month}/${year}`;
-}
-
-function isValidDate(value: string): boolean {
-  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-    return false;
-  }
-
-  const [day, month, year] =
-    value.split("/").map(Number);
-
-  const date = new Date(
-    year,
-    month - 1,
-    day
-  );
-
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  );
-}
-
-function isValidTime(value: string): boolean {
-  if (!/^\d{2}:\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const [hours, minutes] =
-    value.split(":").map(Number);
-
-  return (
-    hours >= 0 &&
-    hours <= 23 &&
-    minutes >= 0 &&
-    minutes <= 59
-  );
-}
-
-function timeToMinutes(
-  value: string
-): number {
-  const [hours, minutes] =
-    value.split(":").map(Number);
-
-  return hours * 60 + minutes;
 }
 
 export default function ScaleForm({
@@ -138,7 +114,9 @@ export default function ScaleForm({
     useState("");
 
   useEffect(() => {
-    if (!initialValues) return;
+    if (!initialValues) {
+      return;
+    }
 
     setEmployeeId(
       initialValues.employee_id
@@ -168,65 +146,36 @@ export default function ScaleForm({
   }, [initialValues]);
 
   function handleSubmit() {
-    if (
-      employeeId === 0 ||
-      !workDate.trim() ||
-      !startTime.trim() ||
-      !endTime.trim() ||
-      !shiftName.trim()
-    ) {
+    const errors =
+      validateScale({
+        employee_id:
+          employeeId,
+        work_date:
+          workDate,
+        start_time:
+          startTime,
+        end_time:
+          endTime,
+        shift_name:
+          shiftName,
+      });
+
+    const firstError =
+      Object.values(errors)[0];
+
+    if (firstError) {
       Alert.alert(
-        "Campos obrigatórios",
-        "Preencha todos os campos obrigatórios."
+        "Dados inválidos",
+        firstError
       );
 
       return;
     }
-
-    if (!isValidDate(workDate)) {
-      Alert.alert(
-        "Data inválida",
-        "Informe uma data válida no formato DD/MM/YYYY."
-      );
-
-      return;
-    }
-
-    if (!isValidTime(startTime)) {
-      Alert.alert(
-        "Hora inicial inválida",
-        "Informe a hora inicial no formato HH:mm."
-      );
-
-      return;
-    }
-
-    if (!isValidTime(endTime)) {
-      Alert.alert(
-        "Hora final inválida",
-        "Informe a hora final no formato HH:mm."
-      );
-
-      return;
-    }
-
-    const startMinutes =
-      timeToMinutes(startTime);
-
-    const endMinutes =
-      timeToMinutes(endTime);
-
-    if (endMinutes === startMinutes) {
-  Alert.alert(
-    "Horário inválido",
-    "A hora inicial e a hora final não podem ser iguais."
-  );
-
-  return;
-}
 
     const databaseDate =
-      displayDateToDatabase(workDate);
+      displayDateToDatabase(
+        workDate
+      );
 
     if (
       scaleService.hasConflict(
@@ -251,15 +200,20 @@ export default function ScaleForm({
     onSubmit({
       id: initialValues?.id,
 
-      employee_id: employeeId,
+      employee_id:
+        employeeId,
 
-      work_date: databaseDate,
+      work_date:
+        databaseDate,
 
-      start_time: startTime,
+      start_time:
+        startTime,
 
-      end_time: endTime,
+      end_time:
+        endTime,
 
-      shift_name: shiftName,
+      shift_name:
+        shiftName,
 
       status:
         initialValues?.status ??
@@ -271,7 +225,8 @@ export default function ScaleForm({
         initialValues?.created_at ??
         now,
 
-      updated_at: now,
+      updated_at:
+        now,
     });
   }
 
@@ -280,16 +235,22 @@ export default function ScaleForm({
       <EmployeeSelect
         label="Funcionário"
         value={employeeId}
-        onChange={setEmployeeId}
+        onChange={
+          setEmployeeId
+        }
       />
 
       <PrimaryInput
         label="Data"
         placeholder="DD/MM/AAAA"
         value={workDate}
-        onChangeText={(value) =>
+        onChangeText={(
+          value
+        ) =>
           setWorkDate(
-            formatDateInput(value)
+            formatDateInput(
+              value
+            )
           )
         }
         keyboardType="numeric"
@@ -300,9 +261,13 @@ export default function ScaleForm({
         label="Hora Inicial"
         placeholder="HH:mm"
         value={startTime}
-        onChangeText={(value) =>
+        onChangeText={(
+          value
+        ) =>
           setStartTime(
-            formatTimeInput(value)
+            formatTimeInput(
+              value
+            )
           )
         }
         keyboardType="numeric"
@@ -313,9 +278,13 @@ export default function ScaleForm({
         label="Hora Final"
         placeholder="HH:mm"
         value={endTime}
-        onChangeText={(value) =>
+        onChangeText={(
+          value
+        ) =>
           setEndTime(
-            formatTimeInput(value)
+            formatTimeInput(
+              value
+            )
           )
         }
         keyboardType="numeric"
@@ -326,19 +295,25 @@ export default function ScaleForm({
         label="Turno"
         placeholder="Manhã"
         value={shiftName}
-        onChangeText={setShiftName}
+        onChangeText={
+          setShiftName
+        }
       />
 
       <PrimaryInput
         label="Observações"
         placeholder="Opcional"
         value={notes}
-        onChangeText={setNotes}
+        onChangeText={
+          setNotes
+        }
       />
 
       <PrimaryButton
         title={buttonTitle}
-        onPress={handleSubmit}
+        onPress={
+          handleSubmit
+        }
       />
     </View>
   );
