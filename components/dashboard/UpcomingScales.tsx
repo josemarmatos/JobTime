@@ -1,11 +1,13 @@
 import SectionTitle from "@/components/layout/SectionTitle";
 import Card from "@/components/ui/Card";
 import { ScaleListItem } from "@/services/scaleService";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
   scales: ScaleListItem[];
   onPress?: (scale: ScaleListItem) => void;
+  onComplete?: (scale: ScaleListItem) => void;
+  onCancel?: (scale: ScaleListItem) => void;
 };
 
 function formatDate(value: string): string {
@@ -22,7 +24,52 @@ function formatDate(value: string): string {
 export default function UpcomingScales({
   scales,
   onPress,
+  onComplete,
+  onCancel,
 }: Props) {
+  function handleComplete(
+    scale: ScaleListItem
+  ) {
+    Alert.alert(
+      "Concluir escala",
+      `Deseja marcar a escala de ${scale.employee_name} como concluída?`,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Concluir",
+          onPress: () => {
+            onComplete?.(scale);
+          },
+        },
+      ]
+    );
+  }
+
+  function handleCancel(
+    scale: ScaleListItem
+  ) {
+    Alert.alert(
+      "Cancelar escala",
+      `Deseja realmente cancelar a escala de ${scale.employee_name}?`,
+      [
+        {
+          text: "Não",
+          style: "cancel",
+        },
+        {
+          text: "Cancelar escala",
+          style: "destructive",
+          onPress: () => {
+            onCancel?.(scale);
+          },
+        },
+      ]
+    );
+  }
+
   return (
     <View style={styles.container}>
       <SectionTitle title="Próximas escalas" />
@@ -77,6 +124,30 @@ export default function UpcomingScales({
               <Text style={styles.arrow}>
                 ›
               </Text>
+            </View>
+
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.completeButton}
+                onPress={() =>
+                  handleComplete(scale)
+                }
+              >
+                <Text style={styles.buttonText}>
+                  Concluir
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() =>
+                  handleCancel(scale)
+                }
+              >
+                <Text style={styles.buttonText}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {index < scales.length - 1 ? (
@@ -141,6 +212,33 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 26,
     color: "#999",
+  },
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 14,
+    gap: 8,
+  },
+
+  completeButton: {
+    backgroundColor: "#2E7D32",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
+  cancelButton: {
+    backgroundColor: "#F57C00",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
+  buttonText: {
+    color: "#FFF",
+    fontWeight: "700",
+    fontSize: 13,
   },
 
   divider: {

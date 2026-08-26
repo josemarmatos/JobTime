@@ -19,9 +19,7 @@ import {
   scaleService,
 } from "@/services/scaleService";
 import { DashboardStatistics } from "@/types/Dashboard";
-import {
-  router,
-} from "expo-router";
+import { router } from "expo-router";
 import {
   useCallback,
   useEffect,
@@ -29,7 +27,7 @@ import {
 } from "react";
 import {
   RefreshControl,
-  ScrollView,
+  ScrollView
 } from "react-native";
 
 export default function Dashboard() {
@@ -140,6 +138,72 @@ export default function Dashboard() {
     });
   }
 
+  function handleComplete(
+    scale: ScaleListItem
+  ) {
+    if (!scale.id) {
+      return;
+    }
+
+    try {
+      scaleService.updateStatus(
+        scale.id,
+        "completed"
+      );
+
+      loadDashboard();
+
+      hapticService.success();
+
+      showToast(
+        "Escala concluída com sucesso!",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+
+      hapticService.error();
+
+      showToast(
+        "Erro ao concluir a escala.",
+        "error"
+      );
+    }
+  }
+
+  function handleCancel(
+    scale: ScaleListItem
+  ) {
+    if (!scale.id) {
+      return;
+    }
+
+    try {
+      scaleService.updateStatus(
+        scale.id,
+        "cancelled"
+      );
+
+      loadDashboard();
+
+      hapticService.success();
+
+      showToast(
+        "Escala cancelada com sucesso!",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+
+      hapticService.error();
+
+      showToast(
+        "Erro ao cancelar a escala.",
+        "error"
+      );
+    }
+  }
+
   return (
     <Screen>
       {loading ? (
@@ -181,6 +245,12 @@ export default function Dashboard() {
               scales={upcomingScales}
               onPress={
                 handleUpcomingScalePress
+              }
+              onComplete={
+                handleComplete
+              }
+              onCancel={
+                handleCancel
               }
             />
           </AnimatedContainer>
