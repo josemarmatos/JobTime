@@ -45,9 +45,10 @@ export class DashboardService {
         `
       )?.total ?? 0;
 
-    const today = new Date()
-      .toISOString()
-      .split("T")[0];
+    const today =
+      new Date()
+        .toISOString()
+        .split("T")[0];
 
     const todayScales =
       database.getFirstSync<{ total: number }>(
@@ -59,15 +60,54 @@ export class DashboardService {
         [today]
       )?.total ?? 0;
 
+    const scheduledScales =
+      database.getFirstSync<{ total: number }>(
+        `
+        SELECT COUNT(*) AS total
+        FROM scales
+        WHERE status = 'scheduled';
+        `
+      )?.total ?? 0;
+
+    const completedScales =
+      database.getFirstSync<{ total: number }>(
+        `
+        SELECT COUNT(*) AS total
+        FROM scales
+        WHERE status = 'completed';
+        `
+      )?.total ?? 0;
+
+    const cancelledScales =
+      database.getFirstSync<{ total: number }>(
+        `
+        SELECT COUNT(*) AS total
+        FROM scales
+        WHERE status = 'cancelled';
+        `
+      )?.total ?? 0;
+
     return {
       totalCompanies,
+
       totalEmployees,
+
       activeEmployees,
+
       inactiveEmployees,
+
       totalScales,
+
       todayScales,
+
+      scheduledScales,
+
+      completedScales,
+
+      cancelledScales,
     };
   }
 }
 
-export const dashboardService = new DashboardService();
+export const dashboardService =
+  new DashboardService();

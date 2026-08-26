@@ -10,4 +10,10 @@ export type DashboardStatistics = {
   totalScales: number;
 
   todayScales: number;
+
+  scheduledScales: number;
+
+  completedScales: number;
+
+  cancelledScales: number;
 };

@@ -25,13 +25,25 @@ export default function Dashboard() {
 
   const { showToast } = useToast();
 
-  const [stats, setStats] = useState<DashboardStatistics>({
+  const [stats, setStats] =
+  useState<DashboardStatistics>({
     totalCompanies: 0,
+
     totalEmployees: 0,
+
     activeEmployees: 0,
+
     inactiveEmployees: 0,
+
     totalScales: 0,
+
     todayScales: 0,
+
+    scheduledScales: 0,
+
+    completedScales: 0,
+
+    cancelledScales: 0,
   });
 
   const loadDashboard = useCallback(async () => {
