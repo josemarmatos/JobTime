@@ -171,36 +171,198 @@ export class ScaleService {
   getUpcoming(
     limit: number = 5
   ): ScaleListItem[] {
-    return database.getAllSync<ScaleListItem>(
-      `
-      SELECT
-        scales.*,
-        employees.name AS employee_name,
-        companies.name AS company_name
-      FROM scales
-      INNER JOIN employees
-        ON employees.id = scales.employee_id
-      INNER JOIN companies
-        ON companies.id = employees.company_id
-      WHERE
-        scales.status = 'scheduled'
-        AND (
-          scales.work_date >
-            date('now', 'localtime')
-          OR (
-            scales.work_date =
-              date('now', 'localtime')
-            AND scales.end_time >=
-              time('now', 'localtime')
+    const scales =
+      database.getAllSync<ScaleListItem>(
+        `
+        SELECT
+          scales.*,
+          employees.name AS employee_name,
+          companies.name AS company_name
+        FROM scales
+        INNER JOIN employees
+          ON employees.id = scales.employee_id
+        INNER JOIN companies
+          ON companies.id = employees.company_id
+        WHERE scales.status = 'scheduled'
+          AND scales.work_date >= date(
+            'now',
+            'localtime',
+            '-1 day'
           )
-        )
-      ORDER BY
-        scales.work_date ASC,
-        scales.start_time ASC
-      LIMIT ?;
-      `,
-      [limit]
+        ORDER BY
+          scales.work_date ASC,
+          scales.start_time ASC;
+        `
+      );
+
+    const now = new Date();
+
+    const today =
+      `${now.getFullYear()}-${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}-${String(
+        now.getDate()
+      ).padStart(2, "0")}`;
+
+    const currentMinutes =
+      now.getHours() * 60 +
+      now.getMinutes();
+
+    const upcoming =
+      scales.filter((scale) => {
+        const workDate =
+          scale.work_date;
+
+        if (workDate > today) {
+          return true;
+        }
+
+        if (workDate < today) {
+          return this.isOvernightScale(
+            scale
+          ) && this.isStillRunningOvernight(
+            scale,
+            today,
+            currentMinutes
+          );
+        }
+
+        const startMinutes =
+          this.timeToMinutes(
+            scale.start_time
+          );
+
+        const endMinutes =
+          this.timeToMinutes(
+            scale.end_time
+          );
+
+        if (endMinutes > startMinutes) {
+          return endMinutes >= currentMinutes;
+        }
+
+        return true;
+      });
+
+    return upcoming
+      .sort((a, b) => {
+        const dateA =
+          this.getUpcomingSortDate(
+            a,
+            today
+          );
+
+        const dateB =
+          this.getUpcomingSortDate(
+            b,
+            today
+          );
+
+        return (
+          dateA.getTime() -
+          dateB.getTime()
+        );
+      })
+      .slice(0, limit);
+  }
+
+  private isOvernightScale(
+    scale: Scale
+  ): boolean {
+    return (
+      this.timeToMinutes(
+        scale.end_time
+      ) <
+      this.timeToMinutes(
+        scale.start_time
+      )
     );
+  }
+
+  private isStillRunningOvernight(
+    scale: Scale,
+    today: string,
+    currentMinutes: number
+  ): boolean {
+    if (!this.isOvernightScale(scale)) {
+      return false;
+    }
+
+    const previousDay =
+      new Date(
+        `${today}T00:00:00Z`
+      );
+
+    previousDay.setUTCDate(
+      previousDay.getUTCDate() - 1
+    );
+
+    const previousDayString =
+      `${previousDay.getUTCFullYear()}-${String(
+        previousDay.getUTCMonth() + 1
+      ).padStart(2, "0")}-${String(
+        previousDay.getUTCDate()
+      ).padStart(2, "0")}`;
+
+    if (
+      scale.work_date !==
+      previousDayString
+    ) {
+      return false;
+    }
+
+    const endMinutes =
+      this.timeToMinutes(
+        scale.end_time
+      );
+
+    return currentMinutes <= endMinutes;
+  }
+
+  private getUpcomingSortDate(
+    scale: ScaleListItem,
+    today: string
+  ): Date {
+    const startMinutes =
+      this.timeToMinutes(
+        scale.start_time
+      );
+
+    const date =
+      new Date(
+        `${scale.work_date}T00:00:00`
+      );
+
+    if (
+      scale.work_date < today &&
+      this.isOvernightScale(scale)
+    ) {
+      date.setDate(
+        date.getDate() + 1
+      );
+
+      date.setHours(
+        this.timeToMinutes(
+          scale.end_time
+        ) / 60,
+        this.timeToMinutes(
+          scale.end_time
+        ) % 60,
+        0,
+        0
+      );
+
+      return date;
+    }
+
+    date.setHours(
+      Math.floor(startMinutes / 60),
+      startMinutes % 60,
+      0,
+      0
+    );
+
+    return date;
   }
 
   findById(id: number): Scale | null {
@@ -270,7 +432,8 @@ export class ScaleService {
   }
 
   delete(id: number): void {
-    const scale = this.findById(id);
+    const scale =
+      this.findById(id);
 
     if (!scale) {
       throw new Error(
