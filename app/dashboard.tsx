@@ -19,7 +19,14 @@ import {
   scaleService,
 } from "@/services/scaleService";
 import { DashboardStatistics } from "@/types/Dashboard";
-import { useCallback, useEffect, useState } from "react";
+import {
+  router,
+} from "expo-router";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import {
   RefreshControl,
   ScrollView,
@@ -118,6 +125,21 @@ export default function Dashboard() {
       showToast,
     ]);
 
+  function handleUpcomingScalePress(
+    scale: ScaleListItem
+  ) {
+    if (!scale.id) {
+      return;
+    }
+
+    router.push({
+      pathname: "/scale-edit",
+      params: {
+        id: String(scale.id),
+      },
+    });
+  }
+
   return (
     <Screen>
       {loading ? (
@@ -157,6 +179,9 @@ export default function Dashboard() {
           <AnimatedContainer delay={400}>
             <UpcomingScales
               scales={upcomingScales}
+              onPress={
+                handleUpcomingScalePress
+              }
             />
           </AnimatedContainer>
 

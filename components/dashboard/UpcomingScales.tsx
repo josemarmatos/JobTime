@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
   scales: ScaleListItem[];
+  onPress?: (scale: ScaleListItem) => void;
 };
 
 function formatDate(value: string): string {
@@ -20,6 +21,7 @@ function formatDate(value: string): string {
 
 export default function UpcomingScales({
   scales,
+  onPress,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -33,7 +35,14 @@ export default function UpcomingScales({
         </Card>
       ) : (
         scales.map((scale, index) => (
-          <Card key={scale.id}>
+          <Card
+            key={scale.id}
+            onPress={
+              onPress
+                ? () => onPress(scale)
+                : undefined
+            }
+          >
             <View style={styles.item}>
               <View style={styles.dateContainer}>
                 <Text style={styles.date}>
@@ -64,6 +73,10 @@ export default function UpcomingScales({
                   {scale.end_time}
                 </Text>
               </View>
+
+              <Text style={styles.arrow}>
+                ›
+              </Text>
             </View>
 
             {index < scales.length - 1 ? (
@@ -122,6 +135,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 13,
     color: "#888",
+  },
+
+  arrow: {
+    marginLeft: 8,
+    fontSize: 26,
+    color: "#999",
   },
 
   divider: {
