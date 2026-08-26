@@ -6,6 +6,11 @@ export type ScaleListItem = Scale & {
   company_name: string;
 };
 
+type EditableScaleStatus =
+  | "scheduled"
+  | "completed"
+  | "cancelled";
+
 export class ScaleService {
   private timeToMinutes(time: string): number {
     const [hours, minutes] = time
@@ -218,12 +223,13 @@ export class ScaleService {
         }
 
         if (workDate < today) {
-          return this.isOvernightScale(
-            scale
-          ) && this.isStillRunningOvernight(
-            scale,
-            today,
-            currentMinutes
+          return (
+            this.isOvernightScale(scale) &&
+            this.isStillRunningOvernight(
+              scale,
+              today,
+              currentMinutes
+            )
           );
         }
 
@@ -380,6 +386,32 @@ export class ScaleService {
   }
 
   update(scale: Scale): void {
+    const currentScale =
+      this.findById(scale.id!);
+
+    if (!currentScale) {
+      throw new Error(
+        "Escala não encontrada."
+      );
+    }
+
+    if (
+      currentScale.status === "completed" ||
+      currentScale.status === "cancelled"
+    ) {
+      throw new Error(
+        "Escalas concluídas ou canceladas não podem ser alteradas."
+      );
+    }
+
+    if (
+      scale.status !== "scheduled"
+    ) {
+      throw new Error(
+        "Uma escala agendada só pode ser editada enquanto estiver agendada."
+      );
+    }
+
     database.runSync(
       `
       UPDATE scales
@@ -410,11 +442,32 @@ export class ScaleService {
 
   updateStatus(
     id: number,
-    status:
-      | "scheduled"
-      | "completed"
-      | "cancelled"
+    status: EditableScaleStatus
   ): void {
+    const scale =
+      this.findById(id);
+
+    if (!scale) {
+      throw new Error(
+        "Escala não encontrada."
+      );
+    }
+
+    if (scale.status !== "scheduled") {
+      throw new Error(
+        "Somente escalas agendadas podem ter o status alterado."
+      );
+    }
+
+    if (
+      status !== "completed" &&
+      status !== "cancelled"
+    ) {
+      throw new Error(
+        "Uma escala agendada só pode ser concluída ou cancelada."
+      );
+    }
+
     database.runSync(
       `
       UPDATE scales
