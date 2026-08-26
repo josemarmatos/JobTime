@@ -168,6 +168,41 @@ export class ScaleService {
     `);
   }
 
+  getUpcoming(
+    limit: number = 5
+  ): ScaleListItem[] {
+    return database.getAllSync<ScaleListItem>(
+      `
+      SELECT
+        scales.*,
+        employees.name AS employee_name,
+        companies.name AS company_name
+      FROM scales
+      INNER JOIN employees
+        ON employees.id = scales.employee_id
+      INNER JOIN companies
+        ON companies.id = employees.company_id
+      WHERE
+        scales.status = 'scheduled'
+        AND (
+          scales.work_date >
+            date('now', 'localtime')
+          OR (
+            scales.work_date =
+              date('now', 'localtime')
+            AND scales.end_time >=
+              time('now', 'localtime')
+          )
+        )
+      ORDER BY
+        scales.work_date ASC,
+        scales.start_time ASC
+      LIMIT ?;
+      `,
+      [limit]
+    );
+  }
+
   findById(id: number): Scale | null {
     const scale =
       database.getFirstSync<Scale>(
@@ -183,24 +218,6 @@ export class ScaleService {
   }
 
   update(scale: Scale): void {
-    const existingScale =
-      this.findById(scale.id!);
-
-    if (!existingScale) {
-      throw new Error(
-        "Escala não encontrada."
-      );
-    }
-
-    if (
-      existingScale.status === "completed" ||
-      existingScale.status === "cancelled"
-    ) {
-      throw new Error(
-        "Escalas concluídas ou canceladas não podem ser alteradas."
-      );
-    }
-
     database.runSync(
       `
       UPDATE scales

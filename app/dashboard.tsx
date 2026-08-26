@@ -4,14 +4,20 @@ import DashboardSummary from "@/components/dashboard/DashboardSummary";
 import KPIGrid from "@/components/dashboard/KPIGrid";
 import ManagementSection from "@/components/dashboard/ManagementSection";
 import QuickActions from "@/components/dashboard/QuickActions";
+import ScaleStatusOverview from "@/components/dashboard/ScaleStatusOverview";
 import SystemStatus from "@/components/dashboard/SystemStatus";
 import TodayOverview from "@/components/dashboard/TodayOverview";
+import UpcomingScales from "@/components/dashboard/UpcomingScales";
 import Screen from "@/components/layout/Screen";
 import AnimatedContainer from "@/components/ui/AnimatedContainer";
 import SkeletonDashboard from "@/components/ui/skeleton/SkeletonDashboard";
 import { useToast } from "@/components/ui/toast/ToastProvider";
 import { dashboardService } from "@/services/dashboardService";
 import { hapticService } from "@/services/hapticService";
+import {
+  ScaleListItem,
+  scaleService,
+} from "@/services/scaleService";
 import { DashboardStatistics } from "@/types/Dashboard";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -20,39 +26,43 @@ import {
 } from "react-native";
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [refreshing, setRefreshing] =
+    useState(false);
 
   const { showToast } = useToast();
 
   const [stats, setStats] =
-  useState<DashboardStatistics>({
-    totalCompanies: 0,
+    useState<DashboardStatistics>({
+      totalCompanies: 0,
+      totalEmployees: 0,
+      activeEmployees: 0,
+      inactiveEmployees: 0,
+      totalScales: 0,
+      todayScales: 0,
+      scheduledScales: 0,
+      completedScales: 0,
+      cancelledScales: 0,
+    });
 
-    totalEmployees: 0,
+  const [upcomingScales, setUpcomingScales] =
+    useState<ScaleListItem[]>([]);
 
-    activeEmployees: 0,
+  const loadDashboard =
+    useCallback(async () => {
+      const data =
+        await Promise.resolve(
+          dashboardService.getStatistics()
+        );
 
-    inactiveEmployees: 0,
+      const upcoming =
+        scaleService.getUpcoming(5);
 
-    totalScales: 0,
-
-    todayScales: 0,
-
-    scheduledScales: 0,
-
-    completedScales: 0,
-
-    cancelledScales: 0,
-  });
-
-  const loadDashboard = useCallback(async () => {
-    const data = await Promise.resolve(
-      dashboardService.getStatistics()
-    );
-
-    setStats(data);
-  }, []);
+      setStats(data);
+      setUpcomingScales(upcoming);
+    }, []);
 
   useEffect(() => {
     async function initialize() {
@@ -73,33 +83,40 @@ export default function Dashboard() {
     }
 
     initialize();
-  }, [loadDashboard, showToast]);
+  }, [
+    loadDashboard,
+    showToast,
+  ]);
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
+  const onRefresh =
+    useCallback(async () => {
+      setRefreshing(true);
 
-    try {
-      await loadDashboard();
+      try {
+        await loadDashboard();
 
-      await hapticService.success();
+        await hapticService.success();
 
-      showToast(
-        "Dashboard atualizado com sucesso!",
-        "success"
-      );
-    } catch (error) {
-      console.error(error);
+        showToast(
+          "Dashboard atualizado com sucesso!",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
 
-      await hapticService.error();
+        await hapticService.error();
 
-      showToast(
-        "Erro ao atualizar o Dashboard.",
-        "error"
-      );
-    } finally {
-      setRefreshing(false);
-    }
-  }, [loadDashboard, showToast]);
+        showToast(
+          "Erro ao atualizar o Dashboard.",
+          "error"
+        );
+      } finally {
+        setRefreshing(false);
+      }
+    }, [
+      loadDashboard,
+      showToast,
+    ]);
 
   return (
     <Screen>
@@ -132,18 +149,30 @@ export default function Dashboard() {
           </AnimatedContainer>
 
           <AnimatedContainer delay={320}>
-            <AlertsPanel stats={stats} />
+            <ScaleStatusOverview
+              stats={stats}
+            />
           </AnimatedContainer>
 
           <AnimatedContainer delay={400}>
-            <QuickActions />
+            <UpcomingScales
+              scales={upcomingScales}
+            />
           </AnimatedContainer>
 
           <AnimatedContainer delay={480}>
-            <ManagementSection />
+            <AlertsPanel stats={stats} />
           </AnimatedContainer>
 
           <AnimatedContainer delay={560}>
+            <QuickActions />
+          </AnimatedContainer>
+
+          <AnimatedContainer delay={640}>
+            <ManagementSection />
+          </AnimatedContainer>
+
+          <AnimatedContainer delay={720}>
             <SystemStatus />
           </AnimatedContainer>
         </ScrollView>
