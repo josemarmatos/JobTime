@@ -374,13 +374,14 @@ export class ScaleService {
         date.getDate() + 1
       );
 
+      const endMinutes =
+        this.timeToMinutes(
+          scale.end_time
+        );
+
       date.setHours(
-        this.timeToMinutes(
-          scale.end_time
-        ) / 60,
-        this.timeToMinutes(
-          scale.end_time
-        ) % 60,
+        Math.floor(endMinutes / 60),
+        endMinutes % 60,
         0,
         0
       );
@@ -437,6 +438,38 @@ export class ScaleService {
       throw new Error(
         "Uma escala agendada só pode ser editada enquanto estiver agendada."
       );
+    }
+
+    if (
+      scale.employee_id !==
+      currentScale.employee_id
+    ) {
+      const employee =
+        database.getFirstSync<{
+          id: number;
+          active: number;
+        }>(
+          `
+          SELECT
+            id,
+            active
+          FROM employees
+          WHERE id = ?;
+          `,
+          [scale.employee_id]
+        );
+
+      if (!employee) {
+        throw new Error(
+          "Funcionário não encontrado."
+        );
+      }
+
+      if (employee.active !== 1) {
+        throw new Error(
+          "Funcionário inativo não pode receber uma nova escala."
+        );
+      }
     }
 
     database.runSync(
