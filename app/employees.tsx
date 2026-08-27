@@ -1,6 +1,13 @@
 import { Picker } from "@react-native-picker/picker";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import {
+  router,
+  useFocusEffect,
+} from "expo-router";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import {
   Alert,
   FlatList,
@@ -29,7 +36,8 @@ export default function Employees() {
   const [companies, setCompanies] =
     useState<Company[]>([]);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
   const [companyFilter, setCompanyFilter] =
     useState(0);
@@ -45,7 +53,8 @@ export default function Employees() {
   }
 
   function loadCompanies() {
-    const data = companyService.list();
+    const data =
+      companyService.list();
 
     setCompanies(data);
   }
@@ -64,7 +73,7 @@ export default function Employees() {
   function handleDelete(id: number) {
     Alert.alert(
       "Excluir funcionário",
-      "Deseja realmente excluir este funcionário?",
+      "Deseja realmente excluir este funcionário? Esta ação é permanente.",
       [
         {
           text: "Cancelar",
@@ -74,8 +83,26 @@ export default function Employees() {
           text: "Excluir",
           style: "destructive",
           onPress: () => {
-            employeeService.delete(id);
-            loadEmployees();
+            try {
+              employeeService.delete(id);
+
+              loadEmployees();
+
+              Alert.alert(
+                "Sucesso",
+                "Funcionário excluído com sucesso."
+              );
+            } catch (error) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : "Não foi possível excluir o funcionário.";
+
+              Alert.alert(
+                "Não foi possível excluir",
+                message
+              );
+            }
           },
         },
       ]
@@ -94,7 +121,8 @@ export default function Employees() {
 
       const matchesCompany =
         companyFilter === 0 ||
-        employee.company_id === companyFilter;
+        employee.company_id ===
+          companyFilter;
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -119,7 +147,7 @@ export default function Employees() {
       />
     ) : (
       <EmptyState
-        icon="🔍"
+        icon="🔎"
         title="Nenhum funcionário encontrado"
         description="Tente outro nome, empresa ou status."
       />
@@ -144,7 +172,9 @@ export default function Employees() {
           <Picker
             selectedValue={companyFilter}
             onValueChange={(itemValue) =>
-              setCompanyFilter(Number(itemValue))
+              setCompanyFilter(
+                Number(itemValue)
+              )
             }
           >
             <Picker.Item
@@ -172,7 +202,9 @@ export default function Employees() {
           <Picker
             selectedValue={statusFilter}
             onValueChange={(itemValue) =>
-              setStatusFilter(String(itemValue))
+              setStatusFilter(
+                String(itemValue)
+              )
             }
           >
             <Picker.Item
@@ -196,7 +228,9 @@ export default function Employees() {
       <PrimaryButton
         title="+ Novo Funcionário"
         onPress={() =>
-          router.push("/employee-create")
+          router.push(
+            "/employee-create"
+          )
         }
       />
 
@@ -207,14 +241,19 @@ export default function Employees() {
         }
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={emptyState}
+        ListEmptyComponent={
+          emptyState
+        }
         renderItem={({ item }) => (
           <EmployeeCard
             employee={item}
-            companyName={item.company_name}
+            companyName={
+              item.company_name
+            }
             onEdit={() =>
               router.push({
-                pathname: "/employee-edit",
+                pathname:
+                  "/employee-edit",
                 params: {
                   id: String(item.id),
                 },
@@ -233,7 +272,8 @@ export default function Employees() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     padding: 20,
   },
 

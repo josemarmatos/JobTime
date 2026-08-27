@@ -68,14 +68,15 @@ export class EmployeeRepository {
   }
 
   findById(id: number): Employee | null {
-    const employee = database.getFirstSync<Employee>(
-      `
-      SELECT *
-      FROM employees
-      WHERE id = ?;
-      `,
-      [id]
-    );
+    const employee =
+      database.getFirstSync<Employee>(
+        `
+        SELECT *
+        FROM employees
+        WHERE id = ?;
+        `,
+        [id]
+      );
 
     return employee ?? null;
   }
@@ -126,6 +127,33 @@ export class EmployeeRepository {
   }
 
   delete(id: number): void {
+    const employee =
+      this.findById(id);
+
+    if (!employee) {
+      throw new Error(
+        "Funcionário não encontrado."
+      );
+    }
+
+    const scaleCount =
+      database.getFirstSync<{
+        total: number;
+      }>(
+        `
+        SELECT COUNT(*) AS total
+        FROM scales
+        WHERE employee_id = ?;
+        `,
+        [id]
+      )?.total ?? 0;
+
+    if (scaleCount > 0) {
+      throw new Error(
+        "Este funcionário possui escalas vinculadas e não pode ser excluído. Inative o funcionário para preservar o histórico."
+      );
+    }
+
     database.runSync(
       `
       DELETE FROM employees
