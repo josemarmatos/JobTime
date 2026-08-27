@@ -119,6 +119,33 @@ export class ScaleService {
   }
 
   create(scale: Scale): void {
+    const employee =
+      database.getFirstSync<{
+        id: number;
+        active: number;
+      }>(
+        `
+        SELECT
+          id,
+          active
+        FROM employees
+        WHERE id = ?;
+        `,
+        [scale.employee_id]
+      );
+
+    if (!employee) {
+      throw new Error(
+        "Funcionário não encontrado."
+      );
+    }
+
+    if (employee.active !== 1) {
+      throw new Error(
+        "Funcionário inativo não pode receber novas escalas."
+      );
+    }
+
     database.runSync(
       `
       INSERT INTO scales (
