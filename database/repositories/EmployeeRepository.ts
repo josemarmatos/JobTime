@@ -46,6 +46,15 @@ export class EmployeeRepository {
     `);
   }
 
+  listActive(): Employee[] {
+    return database.getAllSync<Employee>(`
+      SELECT *
+      FROM employees
+      WHERE active = 1
+      ORDER BY name;
+    `);
+  }
+
   listWithCompany(): EmployeeListItem[] {
     return database.getAllSync<EmployeeListItem>(`
       SELECT

@@ -1,6 +1,10 @@
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { COLORS } from "@/constants/colors";
 import { employeeService } from "@/services/employeeService";
@@ -17,12 +21,35 @@ export default function EmployeeSelect({
   value,
   onChange,
 }: Props) {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] =
+    useState<Employee[]>([]);
 
   useEffect(() => {
-    const data = employeeService.list();
-    setEmployees(data);
-  }, []);
+    const activeEmployees =
+      employeeService.listActive();
+
+    if (
+      value > 0 &&
+      !activeEmployees.some(
+        (employee) =>
+          employee.id === value
+      )
+    ) {
+      const currentEmployee =
+        employeeService.findById(value);
+
+      if (currentEmployee) {
+        setEmployees([
+          currentEmployee,
+          ...activeEmployees,
+        ]);
+
+        return;
+      }
+    }
+
+    setEmployees(activeEmployees);
+  }, [value]);
 
   return (
     <View style={styles.container}>
@@ -47,7 +74,11 @@ export default function EmployeeSelect({
           {employees.map((employee) => (
             <Picker.Item
               key={employee.id}
-              label={employee.name}
+              label={
+                employee.active === 1
+                  ? employee.name
+                  : `${employee.name} (Inativo)`
+              }
               value={employee.id}
             />
           ))}

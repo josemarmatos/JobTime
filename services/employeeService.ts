@@ -16,6 +16,10 @@ export class EmployeeService {
     return employeeRepository.list();
   }
 
+  listActive(): Employee[] {
+    return employeeRepository.listActive();
+  }
+
   listWithCompany(): EmployeeListItem[] {
     return employeeRepository.listWithCompany();
   }
